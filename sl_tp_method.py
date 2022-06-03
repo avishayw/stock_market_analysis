@@ -16,4 +16,4 @@ def sl_tp_method(initial_cap, sl_percentage,tp_percentage,success_probability):
 
 
 if __name__=="__main__":
-    sl_tp_method(100,5.0,10.0,44.0)
+    sl_tp_method(100,5.0,10.0,46.7)
