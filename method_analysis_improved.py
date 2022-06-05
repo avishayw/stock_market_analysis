@@ -39,10 +39,14 @@ for tp in tp_list:
                 total_summary["Stock"].append(ticker)
                 for key in result.keys():
                     total_summary[key].append(result[key])
+
+                method_detailed_results[tp][sl] = total_summary
+                with open("method_detailed_results.json", "w") as f:
+                    json.dump(method_detailed_results, f, indent=4)
+
             except TypeError:
                 pass
 
-        method_detailed_results[tp][sl] = total_summary
         total_summary_avg = {}
         for key in total_summary:
             total_summary_avg[key] = [statistics.mean(total_summary[key])]
@@ -51,5 +55,3 @@ for tp in tp_list:
 
         with open("method_results.json", "w") as f:
             json.dump(method_results, f, indent=4)
-        with open("method_detailed_results.json", "w") as f:
-            json.dump(method_detailed_results, f, indent=4)
