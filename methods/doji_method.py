@@ -58,10 +58,15 @@ def doji_method(ticker, sl_percentage, tp_percentage):
         i = 0
         while True:
             date_df = pd.DataFrame()
+            sanity = 1
             while date_df.empty:
                 date = entrance_df.iloc[day]["Date"] + timedelta(days=i)
                 date_df = df.loc[df["Date"] == date]
                 i += 1
+                if sanity == 7:
+                    break
+            if sanity == 7:
+                break
             high = date_df.iloc[0]["High"]
             low = date_df.iloc[0]["Low"]
             price_range = np.arange(low, high, 0.1)
