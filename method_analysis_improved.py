@@ -1,10 +1,12 @@
 import json
 import statistics
+from datetime import datetime
 from methods.doji_method import doji_method
 from get_all_snp_companies import get_all_snp_companies
 
 
 success_per_ticker = {}
+print(f"{datetime.utcnow().strftime('%Y-%m-%d-%H:%M:%S')} Gathering all S&P500 tickers")
 snp_tickers = get_all_snp_companies()['Symbol'].tolist()
 
 
@@ -18,7 +20,7 @@ for tp in tp_list:
     method_results[tp] = {}
     method_detailed_results[tp] = {}
     for sl in sl_list:
-        print(f"Exploring for take profit {tp}% and stop loss {sl}%")
+        print(f"{datetime.utcnow().strftime('%Y-%m-%d-%H:%M:%S')} Exploring for take profit {tp}% and stop loss {sl}%")
         total_summary = {"Stock": [],
             "Best case profits ratio": [],
                        "Worst case profits ratio": [],
@@ -31,7 +33,7 @@ for tp in tp_list:
                        "Total exploration time": []}
 
         for ticker in snp_tickers:
-            print(f"Exploring for {ticker}")
+            print(f"{datetime.utcnow().strftime('%Y-%m-%d-%H:%M:%S')} Exploring for {ticker}")
             try:
                 result = doji_method(ticker, sl, tp)
                 total_summary["Stock"].append(ticker)
