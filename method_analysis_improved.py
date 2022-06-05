@@ -37,7 +37,7 @@ for tp in tp_list:
             try:
                 result = doji_method(ticker, sl, tp)
                 total_summary["Stock"].append(ticker)
-                for key in total_summary.keys():
+                for key in result.keys():
                     total_summary[key].append(result[key])
             except TypeError:
                 pass
