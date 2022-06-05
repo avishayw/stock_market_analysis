@@ -8,4 +8,3 @@ def get_all_snp_companies():
 
 if __name__=="__main__":
     print(get_all_snp_companies()['Symbol'].tolist())
-

@@ -23,12 +23,15 @@ def sl_tp_method(initial_cap, final_cap_win, final_cap_loss, sl_percentage,tp_pe
 
 
 if __name__=="__main__":
+    import time
+    start = time.time()
     num_loops = 100000
     wins = 0
     trades_list = []
     for i in range(num_loops):
-        win, trades = sl_tp_method(100,10.0, 0.5, 10.0,3.0,80.0)
+        win, trades = sl_tp_method(100,10.0, 0.5, 2.0,5.0,40.0)
         if win:
             wins += 1
             trades_list.append(trades)
     print(float(wins)/float(num_loops), max(trades_list), statistics.mean(trades_list), statistics.median(trades_list))
+    print(f"Time: {time.time() - start}")
