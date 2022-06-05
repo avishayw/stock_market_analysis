@@ -51,18 +51,20 @@ def doji_method(ticker, sl_percentage, tp_percentage):
     best_case_losses = 0
     best_case_profits = 0
 
+
+
     total_trade_time_list = []
     for day in range(len(entrance_df)):
         price = entrance_df.iloc[day]["Open"]
-        trade_days_counter = 1
-        i = 0
+        trade_days_counter = 0
         while True:
             date_df = pd.DataFrame()
             sanity = 1
             while date_df.empty:
-                date = entrance_df.iloc[day]["Date"] + timedelta(days=i)
+                date = entrance_df.iloc[day]["Date"] + timedelta(days=trade_days_counter)
                 date_df = df.loc[df["Date"] == date]
-                i += 1
+                trade_days_counter += 1
+                sanity += 1
                 if sanity == 7:
                     break
             if sanity == 7:

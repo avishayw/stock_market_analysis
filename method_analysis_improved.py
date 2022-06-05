@@ -1,11 +1,13 @@
 import json
 import statistics
+import pandas as pd
 from datetime import datetime
 from methods.doji_method import doji_method
 from get_all_snp_companies import get_all_snp_companies
 
 
 success_per_ticker = {}
+
 print(f"{datetime.utcnow().strftime('%Y-%m-%d-%H:%M:%S')} Gathering all S&P500 tickers")
 snp_tickers = get_all_snp_companies()['Symbol'].tolist()
 
@@ -48,10 +50,16 @@ for tp in tp_list:
                 pass
 
         total_summary_avg = {}
-        for key in total_summary:
+        for key in list(total_summary.keys())[1:]:
             total_summary_avg[key] = [statistics.mean(total_summary[key])]
 
         method_results[tp][sl] = total_summary_avg
 
         with open("method_results.json", "w") as f:
             json.dump(method_results, f, indent=4)
+
+for tp in method_detailed_results.keys():
+    for sl in method_detailed_results[tp].keys():
+        results_df = pd.DataFrame(method_detailed_results[tp][sl])
+        results_df.to_csv(f"results_tp_{tp}_sl_{sl}.csv")
+

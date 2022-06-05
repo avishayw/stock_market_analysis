@@ -29,7 +29,7 @@ if __name__=="__main__":
     wins = 0
     trades_list = []
     for i in range(num_loops):
-        win, trades = sl_tp_method(100,10.0, 0.5, 2.0,5.0,40.0)
+        win, trades = sl_tp_method(100,10.0, 0.5, 10.0,2.0,93.0)
         if win:
             wins += 1
             trades_list.append(trades)
