@@ -46,16 +46,19 @@ def doji_method(ticker, sl_percentage, tp_percentage):
 
     entrance_df = df.loc[df["up_trend_after_doji"] == True][["Date", "Open"]].reset_index()
 
+    if len(entrance_df) == 0 or entrance_df.empty:
+        return None
+
     worst_case_losses = 0
     worst_case_profits = 0
     best_case_losses = 0
     best_case_profits = 0
-
-
+    dates = {}
 
     total_trade_time_list = []
     for day in range(len(entrance_df)):
         price = entrance_df.iloc[day]["Open"]
+        entrance_date = str(entrance_df.iloc[day]["Date"])[:10]
         trade_days_counter = 0
         while True:
             date_df = pd.DataFrame()
@@ -77,14 +80,17 @@ def doji_method(ticker, sl_percentage, tp_percentage):
             if True in price_range_loss and True in price_range_profit:
                 worst_case_losses += 1
                 best_case_profits += 1
+                dates[entrance_date] = False
                 break
             elif True in price_range_loss:
                 worst_case_losses += 1
                 best_case_losses += 1
+                dates[entrance_date] = False
                 break
             elif True in price_range_profit:
                 worst_case_profits += 1
                 best_case_profits += 1
+                dates[entrance_date] = True
                 break
             else:
                 trade_days_counter += 1
@@ -100,7 +106,7 @@ def doji_method(ticker, sl_percentage, tp_percentage):
                "Median trade period in days": statistics.median(total_trade_time_list),
                "Total exploration time": time.time() - start}
 
-    return summary
+    return summary, dates
 
 if __name__=="__main__":
 
