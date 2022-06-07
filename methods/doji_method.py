@@ -41,10 +41,12 @@ def doji_method(ticker, sl_percentage, tp_percentage):
     df["up_trend"] = np.where(
         (df["High"].shift(-1) < df["High"].shift(-2)) & (df["Low"].shift(-1) < df["Low"].shift(-2)), True, False)
     df["up_trend_after_doji"] = np.where((df.doji == True) & (df.up_trend == True), True, False)
-    df["entrace_date"] = df["Date"].shift(3)
-    df["entrace_price"] = df["Open"].shift(3)
+    df["entrance_date"] = df["Date"].shift(3)
+    df["entrance_price"] = df["Open"].shift(3)
 
-    entrance_df = df.loc[df["up_trend_after_doji"] == True][["entrace_date", "entrace_price"]].reset_index()
+    df = pd.DataFrame.copy(df[3:-3])
+
+    entrance_df = df.loc[df["up_trend_after_doji"] == True][["entrance_date", "entrance_price"]].reset_index()
 
     if len(entrance_df) == 0 or entrance_df.empty:
         return None
@@ -57,14 +59,14 @@ def doji_method(ticker, sl_percentage, tp_percentage):
 
     total_trade_time_list = []
     for day in range(len(entrance_df)):
-        price = entrance_df.iloc[day]["Open"]
-        entrance_date = str(entrance_df.iloc[day]["Date"])[:10]
+        price = entrance_df.iloc[day]["entrance_price"]
+        entrance_date = str(entrance_df.iloc[day]["entrance_date"])[:10]
         trade_days_counter = 0
         while True:
             date_df = pd.DataFrame()
             sanity = 1
             while date_df.empty:
-                date = entrance_df.iloc[day]["Date"] + timedelta(days=trade_days_counter)
+                date = entrance_df.iloc[day]["entrance_date"] + timedelta(days=trade_days_counter)
                 date_df = df.loc[df["Date"] == date]
                 trade_days_counter += 1
                 sanity += 1
