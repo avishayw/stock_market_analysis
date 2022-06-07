@@ -44,7 +44,7 @@ def doji_method(ticker, sl_percentage, tp_percentage):
     df["entrace_date"] = df["Date"].shift(3)
     df["entrace_price"] = df["Open"].shift(3)
 
-    entrance_df = df.loc[df["up_trend_after_doji"] == True][["Date", "Open"]].reset_index()
+    entrance_df = df.loc[df["up_trend_after_doji"] == True][["entrace_date", "entrace_price"]].reset_index()
 
     if len(entrance_df) == 0 or entrance_df.empty:
         return None
