@@ -41,8 +41,8 @@ def doji_method(ticker, sl_percentage, tp_percentage):
     df["up_trend"] = np.where(
         (df["High"].shift(-1) < df["High"].shift(-2)) & (df["Low"].shift(-1) < df["Low"].shift(-2)), True, False)
     df["up_trend_after_doji"] = np.where((df.doji == True) & (df.up_trend == True), True, False)
-    df["entrance_date"] = df["Date"].shift(3)
-    df["entrance_price"] = df["Open"].shift(3)
+    df["entrance_date"] = df["Date"].shift(-3)
+    df["entrance_price"] = df["Open"].shift(-3)
 
     df = pd.DataFrame.copy(df[3:-3])
 
@@ -109,6 +109,7 @@ def doji_method(ticker, sl_percentage, tp_percentage):
                "Total exploration time": time.time() - start}
 
     return summary, dates
+
 
 if __name__=="__main__":
 
