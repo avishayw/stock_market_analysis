@@ -1,0 +1,536 @@
+{
+    "2.0": {
+        "2.0": {
+            "Best case profits ratio": [
+                0.5120971310701685
+            ],
+            "Worst case profits ratio": [
+                0.4982358746480066
+            ],
+            "Best case losses ratio": [
+                0.4874089735260502
+            ],
+            "Worst case losses ratio": [
+                0.501270229948212
+            ],
+            "Max. trade period in days": [
+                46.91235059760956
+            ],
+            "Min. trade period in days": [
+                1
+            ],
+            "Avg. trade period in days": [
+                7.142068882782818
+            ],
+            "Median trade period in days": [
+                4.453187250996016
+            ],
+            "Total exploration time": [
+                2.335506035512187
+            ]
+        },
+        "5.0": {
+            "Best case profits ratio": [
+                0.7153882999251217
+            ],
+            "Worst case profits ratio": [
+                0.7124073475161675
+            ],
+            "Best case losses ratio": [
+                0.2835036741336301
+            ],
+            "Worst case losses ratio": [
+                0.2864846265425842
+            ],
+            "Max. trade period in days": [
+                82.97011952191235
+            ],
+            "Min. trade period in days": [
+                1.00398406374502
+            ],
+            "Avg. trade period in days": [
+                12.335837445727325
+            ],
+            "Median trade period in days": [
+                7.680278884462151
+            ],
+            "Total exploration time": [
+                3.3760320579863166
+            ]
+        },
+        "10.0": {
+            "Best case profits ratio": [
+                0.8441092039322929
+            ],
+            "Worst case profits ratio": [
+                0.8436985797837354
+            ],
+            "Best case losses ratio": [
+                0.15396540249390034
+            ],
+            "Worst case losses ratio": [
+                0.15437602664245784
+            ],
+            "Max. trade period in days": [
+                160.86454183266932
+            ],
+            "Min. trade period in days": [
+                1.0179282868525896
+            ],
+            "Avg. trade period in days": [
+                19.294195844571007
+            ],
+            "Median trade period in days": [
+                9.919322709163346
+            ],
+            "Total exploration time": [
+                4.755902868818002
+            ]
+        }
+    },
+    "3.0": {
+        "2.0": {
+            "Best case profits ratio": [
+                0.43537552829511833
+            ],
+            "Worst case profits ratio": [
+                0.4280326912811143
+            ],
+            "Best case losses ratio": [
+                0.5639298908484589
+            ],
+            "Worst case losses ratio": [
+                0.5712727278624629
+            ],
+            "Max. trade period in days": [
+                58.4601593625498
+            ],
+            "Min. trade period in days": [
+                1.00398406374502
+            ],
+            "Avg. trade period in days": [
+                9.065112956634682
+            ],
+            "Median trade period in days": [
+                5.758964143426295
+            ],
+            "Total exploration time": [
+                2.672423746006422
+            ]
+        },
+        "5.0": {
+            "Best case profits ratio": [
+                0.6506942033908188
+            ],
+            "Worst case profits ratio": [
+                0.6489873031215359
+            ],
+            "Best case losses ratio": [
+                0.34772925421586576
+            ],
+            "Worst case losses ratio": [
+                0.3494361544851488
+            ],
+            "Max. trade period in days": [
+                98.91434262948208
+            ],
+            "Min. trade period in days": [
+                1.0119521912350598
+            ],
+            "Avg. trade period in days": [
+                16.221207408216568
+            ],
+            "Median trade period in days": [
+                10.683266932270916
+            ],
+            "Total exploration time": [
+                4.102429466893473
+            ]
+        },
+        "10.0": {
+            "Best case profits ratio": [
+                0.8018436447671003
+            ],
+            "Worst case profits ratio": [
+                0.8015053194690399
+            ],
+            "Best case losses ratio": [
+                0.19536791897125955
+            ],
+            "Worst case losses ratio": [
+                0.19570624426931996
+            ],
+            "Max. trade period in days": [
+                184.3386454183267
+            ],
+            "Min. trade period in days": [
+                1.0338645418326693
+            ],
+            "Avg. trade period in days": [
+                25.73912157702913
+            ],
+            "Median trade period in days": [
+                15.202191235059761
+            ],
+            "Total exploration time": [
+                6.008325368759642
+            ]
+        }
+    },
+    "5.0": {
+        "2.0": {
+            "Best case profits ratio": [
+                0.3444529248716592
+            ],
+            "Worst case profits ratio": [
+                0.34133474083847887
+            ],
+            "Best case losses ratio": [
+                0.654506529077874
+            ],
+            "Worst case losses ratio": [
+                0.6576247131110543
+            ],
+            "Max. trade period in days": [
+                87.20318725099601
+            ],
+            "Min. trade period in days": [
+                1.00398406374502
+            ],
+            "Avg. trade period in days": [
+                12.858166304044934
+            ],
+            "Median trade period in days": [
+                7.7629482071713145
+            ],
+            "Total exploration time": [
+                3.396084167567857
+            ]
+        },
+        "5.0": {
+            "Best case profits ratio": [
+                0.5604004723069166
+            ],
+            "Worst case profits ratio": [
+                0.5595878108269142
+            ],
+            "Best case losses ratio": [
+                0.4373845606095383
+            ],
+            "Worst case losses ratio": [
+                0.4381972220895406
+            ],
+            "Max. trade period in days": [
+                137.72709163346613
+            ],
+            "Min. trade period in days": [
+                1.0756972111553784
+            ],
+            "Avg. trade period in days": [
+                23.808187187979744
+            ],
+            "Median trade period in days": [
+                16.438247011952193
+            ],
+            "Total exploration time": [
+                5.584595534431032
+            ]
+        },
+        "10.0": {
+            "Best case profits ratio": [
+                0.7356963809065036
+            ],
+            "Worst case profits ratio": [
+                0.7355329606578455
+            ],
+            "Best case losses ratio": [
+                0.2600341146119647
+            ],
+            "Worst case losses ratio": [
+                0.26019753486062275
+            ],
+            "Max. trade period in days": [
+                234.73505976095618
+            ],
+            "Min. trade period in days": [
+                1.2589641434262948
+            ],
+            "Avg. trade period in days": [
+                38.61952126709675
+            ],
+            "Median trade period in days": [
+                25.7898406374502
+            ],
+            "Total exploration time": [
+                8.59064160352684
+            ]
+        }
+    },
+    "10.0": {
+        "2.0": {
+            "Best case profits ratio": [
+                0.24022158424579745
+            ],
+            "Worst case profits ratio": [
+                0.2397764075014123
+            ],
+            "Best case losses ratio": [
+                0.7579688981387908
+            ],
+            "Worst case losses ratio": [
+                0.7584140748831759
+            ],
+            "Max. trade period in days": [
+                167.398406374502
+            ],
+            "Min. trade period in days": [
+                1.00398406374502
+            ],
+            "Avg. trade period in days": [
+                21.837435741178012
+            ],
+            "Median trade period in days": [
+                10.604581673306773
+            ],
+            "Total exploration time": [
+                5.230727817907751
+            ]
+        },
+        "5.0": {
+            "Best case profits ratio": [
+                0.43254049577879333
+            ],
+            "Worst case profits ratio": [
+                0.43242108634552534
+            ],
+            "Best case losses ratio": [
+                0.5636507058245817
+            ],
+            "Worst case losses ratio": [
+                0.5637701152578496
+            ],
+            "Max. trade period in days": [
+                236.898406374502
+            ],
+            "Min. trade period in days": [
+                1.203187250996016
+            ],
+            "Avg. trade period in days": [
+                42.361554828838955
+            ],
+            "Median trade period in days": [
+                29.654382470119522
+            ],
+            "Total exploration time": [
+                9.390226890841328
+            ]
+        },
+        "10.0": {
+            "Best case profits ratio": [
+                0.6243830016565277
+            ],
+            "Worst case profits ratio": [
+                0.6243084738800588
+            ],
+            "Best case losses ratio": [
+                0.36844455635385387
+            ],
+            "Worst case losses ratio": [
+                0.36851908413032275
+            ],
+            "Max. trade period in days": [
+                369.16533864541833
+            ],
+            "Min. trade period in days": [
+                2.412350597609562
+            ],
+            "Avg. trade period in days": [
+                70.64772545663949
+            ],
+            "Median trade period in days": [
+                51.97609561752988
+            ],
+            "Total exploration time": [
+                15.167235909705143
+            ]
+        }
+    },
+    "20.0": {
+        "2.0": {
+            "Best case profits ratio": [
+                0.16642332526807607
+            ],
+            "Worst case profits ratio": [
+                0.16638270236746527
+            ],
+            "Best case losses ratio": [
+                0.830604519156787
+            ],
+            "Worst case losses ratio": [
+                0.8306451420573978
+            ],
+            "Max. trade period in days": [
+                364.3844621513944
+            ],
+            "Min. trade period in days": [
+                1.00398406374502
+            ],
+            "Avg. trade period in days": [
+                39.458923433523225
+            ],
+            "Median trade period in days": [
+                11.7699203187251
+            ],
+            "Total exploration time": [
+                9.018392805559227
+            ]
+        },
+        "5.0": {
+            "Best case profits ratio": [
+                0.32389399514300865
+            ],
+            "Worst case profits ratio": [
+                0.32388803097572566
+            ],
+            "Best case losses ratio": [
+                0.6694143727851635
+            ],
+            "Worst case losses ratio": [
+                0.6694203369524465
+            ],
+            "Max. trade period in days": [
+                471.2011952191235
+            ],
+            "Min. trade period in days": [
+                1.203187250996016
+            ],
+            "Avg. trade period in days": [
+                79.67137264291615
+            ],
+            "Median trade period in days": [
+                50.02490039840637
+            ],
+            "Total exploration time": [
+                17.275993192338372
+            ]
+        },
+        "10.0": {
+            "Best case profits ratio": [
+                0.5023146062693027
+            ],
+            "Worst case profits ratio": [
+                0.502308514428714
+            ],
+            "Best case losses ratio": [
+                0.4815504365145762
+            ],
+            "Worst case losses ratio": [
+                0.4815565283551649
+            ],
+            "Max. trade period in days": [
+                639.2709163346614
+            ],
+            "Min. trade period in days": [
+                3.097609561752988
+            ],
+            "Avg. trade period in days": [
+                134.5819913945048
+            ],
+            "Median trade period in days": [
+                103.57868525896414
+            ],
+            "Total exploration time": [
+                28.201990769678854
+            ]
+        }
+    },
+    "30.0": {
+        "2.0": {
+            "Best case profits ratio": [
+                0.1368641471690963
+            ],
+            "Worst case profits ratio": [
+                0.1368641471690963
+            ],
+            "Best case losses ratio": [
+                0.8589399866537757
+            ],
+            "Worst case losses ratio": [
+                0.8589399866537757
+            ],
+            "Max. trade period in days": [
+                590.0737051792829
+            ],
+            "Min. trade period in days": [
+                1.00398406374502
+            ],
+            "Avg. trade period in days": [
+                55.81336720029465
+            ],
+            "Median trade period in days": [
+                11.832669322709163
+            ],
+            "Total exploration time": [
+                12.192571720754009
+            ]
+        },
+        "5.0": {
+            "Best case profits ratio": [
+                0.27294433192677675
+            ],
+            "Worst case profits ratio": [
+                0.27294433192677675
+            ],
+            "Best case losses ratio": [
+                0.7170570101716778
+            ],
+            "Worst case losses ratio": [
+                0.7170570101716778
+            ],
+            "Max. trade period in days": [
+                725.8286852589641
+            ],
+            "Min. trade period in days": [
+                1.2131474103585658
+            ],
+            "Avg. trade period in days": [
+                114.36438253569688
+            ],
+            "Median trade period in days": [
+                59.88446215139442
+            ],
+            "Total exploration time": [
+                24.253556479970772
+            ]
+        },
+        "10.0": {
+            "Best case profits ratio": [
+                0.43530263729844065
+            ],
+            "Worst case profits ratio": [
+                0.43529816082232264
+            ],
+            "Best case losses ratio": [
+                0.5412463375562414
+            ],
+            "Worst case losses ratio": [
+                0.5412508140323594
+            ],
+            "Max. trade period in days": [
+                906.0756972111553
+            ],
+            "Min. trade period in days": [
+                3.093625498007968
+            ],
+            "Avg. trade period in days": [
+                193.41649379085172
+            ],
+            "Median trade period in days": [
+                148.2480079681275
+            ],
+            "Total exploration time": [
+                40.41629216490514
+            ]
+        }
+    }
+}
