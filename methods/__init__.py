@@ -1,1 +1,0 @@
-from doji_method import doji_method

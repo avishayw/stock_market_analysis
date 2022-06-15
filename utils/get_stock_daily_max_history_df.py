@@ -14,7 +14,7 @@ def get_stock_daily_max_history_df(ticker):
 
 
 if __name__=="__main__":
-    ticker = 'FB'
+    ticker = 'AAPL'
     history = get_stock_daily_max_history_df(ticker)
     history.to_csv(f"{ticker}_max_daily_history.csv")
 
