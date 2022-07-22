@@ -21,6 +21,9 @@ def reverse_pattern_enter_and_exit(ticker, entrance_df, exit_dfs):
 
     for day in range(len(entrance_df)):
         entrance_price = entrance_df.iloc[day]["entrance_price"]
+        # Skip zeros
+        if entrance_price == 0.0:
+            continue
         entrance_date = str(entrance_df.iloc[day]["entrance_date"])
         relevant_exit_df = exit_df.loc[exit_df["entrance_date"] > entrance_date]
 
@@ -54,23 +57,35 @@ def reverse_pattern_enter_and_exit(ticker, entrance_df, exit_dfs):
 
 
 if __name__=="__main__":
-    from locators.reverse_pattern_locators import doji_long, doji_short, evening_star, dark_cloud_cove
+    from locators.reverse_pattern_locators_day import doji_long, doji_short, evening_star, dark_cloud_cove
     from utils.get_all_snp_companies import get_all_snp_companies
+    from os.path import dirname, abspath, exists
+    from pathlib import Path
+    from dateutil.relativedelta import relativedelta
 
+    project_path = dirname(dirname(abspath(__file__)))
     tickers = get_all_snp_companies()
-    print()
+    total_results_df = pd.DataFrame([{"Stock": None, "entrance_date": None, "entrace_price": None, "exit_date": None, "exit_price": None, "trade_time_in_days": None, "win": None, "change": None, "change_%": None}])
+
     for ticker in tickers:
-        cap = 5000
-        entrance_df = doji_long(pd.read_csv(download_stock(ticker)))
-        exit_dfs = [evening_star(pd.read_csv(download_stock(ticker))),
-                    dark_cloud_cove(pd.read_csv(download_stock(ticker)))]
+        print(f"{ticker}")
+        path = download_stock(ticker)
+        if not path:
+            continue
+        stock_df = pd.read_csv(download_stock(ticker))
+        stock_df["datetime"] = pd.to_datetime(stock_df["Date"])
+        stock_df = stock_df.loc[stock_df["datetime"] > datetime.utcnow() - relativedelta(years=4)]
+        stock_df.drop(columns=['datetime'])
+        entrance_df = doji_long(stock_df)
+        exit_dfs = [evening_star(stock_df),
+                    dark_cloud_cove(stock_df)]
+        if entrance_df is None:
+            continue
         result_df = pd.DataFrame(reverse_pattern_enter_and_exit(ticker, entrance_df, exit_dfs))
-        if result_df:
-            changes = result_df["change_%"].to_list()
-            for change in changes:
-                cap = cap*(1 + (change/100.0))
-            print(f"Stock: {ticker}\nFinal cap: {cap}")
-            result_df.to_csv(f"{ticker}_results.csv")
+        if result_df is not None:
+            result_df["Stock"] = ticker
+            total_results_df = pd.concat([total_results_df, result_df], ignore_index=True)
+            total_results_df.to_csv(Path(project_path, "results/entrace_doji_long_evening_star_or_dark_cloud_cove.csv"))
 
 
     # # exit_dfs = [doji_short(pd.read_csv(download_stock(stock))),

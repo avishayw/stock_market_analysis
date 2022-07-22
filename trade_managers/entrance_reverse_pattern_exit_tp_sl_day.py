@@ -1,4 +1,4 @@
-from locators.reverse_pattern_locators import doji_long
+from locators.reverse_pattern_locators_day import doji_long
 from utils.download_stock_csvs import download_stock
 import pandas as pd
 import numpy as np
@@ -25,6 +25,9 @@ def exit_tp_sl(ticker, entrance_df, tp_percentage, sl_percentage):
     total_trade_time_list = []
     for day in range(len(entrance_df)):
         price = entrance_df.iloc[day]["entrance_price"]
+        # Skip zeros
+        if price == 0.0:
+            continue
         entrance_date = str(entrance_df.iloc[day]["entrance_date"])[:10]
         trade_days_counter = 0
         while True:

@@ -6,19 +6,19 @@ import pandas as pd
 def doji_long(df):
     # TODO: update description and conditions for this method
     # TODO: before each step - explain what you're doing
-    df["down_trend_2_days_before"] = np.where((df["High"].shift(1) < df["High"].shift(2)) & (df["Low"].shift(1) < df["Low"].shift(2)),
+    df["down_trend_2_minutes_before"] = np.where((df["High"].shift(1) < df["High"].shift(2)) & (df["Low"].shift(1) < df["Low"].shift(2)),
                                 True, False)
-    df["even_power_today"] = np.where(((df["Open"] - df["Open"] * 0.005) < df.Close) & (
+    df["even_power_now"] = np.where(((df["Open"] - df["Open"] * 0.005) < df.Close) & (
             (df["Open"] + df["Open"] * 0.005) > df.Close), True, False)
-    df["doji"] = np.where((df.down_trend_2_days_before == True) & (df.even_power_today == True), True, False)
-    df["1_day_after_higher"] = np.where(
+    df["doji"] = np.where((df.down_trend_2_minutes_before == True) & (df.even_power_now == True), True, False)
+    df["1_minute_after_higher"] = np.where(
         (df.doji == True) & (df.shift(-1)["Low"] < df["High"]*1.005) &(df["High"]*1.005 < df.shift(-1)["High"]), True, False)
-    df["entrance_date"] = df["Date"].shift(-1)
+    df["entrance_time"] = df["Datetime"].shift(-1)
     df["entrance_price"] = df["High"]*1.005
 
     df = pd.DataFrame.copy(df[3:-1])
 
-    entrance_df = df.loc[df["1_day_after_higher"] == True][["entrance_date", "entrance_price"]].reset_index()
+    entrance_df = df.loc[df["1_minute_after_higher"] == True][["entrance_time", "entrance_price"]].reset_index()
 
     if len(entrance_df) == 0 or entrance_df.empty:
         return None
@@ -112,19 +112,19 @@ def doji_old(df):
 def doji_short(df):
     # TODO: update description and conditions for this method
     # TODO: before each step - explain what you're doing
-    df["up_trend_2_days_before"] = np.where((df["High"].shift(1) > df["High"].shift(2)) & (df["Low"].shift(1) > df["Low"].shift(2)),
+    df["up_trend_2_minutes_before"] = np.where((df["High"].shift(1) > df["High"].shift(2)) & (df["Low"].shift(1) > df["Low"].shift(2)),
                                 True, False)
-    df["even_power_today"] = np.where(((df["Open"] - df["Open"] * 0.005) < df.Close) & (
+    df["even_power_now"] = np.where(((df["Open"] - df["Open"] * 0.005) < df.Close) & (
             (df["Open"] + df["Open"] * 0.005) > df.Close), True, False)
-    df["doji"] = np.where((df.up_trend_2_days_before == True) & (df.even_power_today == True), True, False)
-    df["1_day_after_lower"] = np.where(
+    df["doji"] = np.where((df.up_trend_2_minutes_before == True) & (df.even_power_now == True), True, False)
+    df["1_minute_after_lower"] = np.where(
         (df.doji == True) & (df.shift(-1)["Low"] < df["Low"]*0.995) &(df["Low"]*0.995 < df.shift(-1)["High"]), True, False)
-    df["entrance_date"] = df["Date"].shift(-1)
+    df["entrance_time"] = df["Datetime"].shift(-1)
     df["entrance_price"] = df["Low"]*0.995
 
     df = pd.DataFrame.copy(df[3:-1])
 
-    entrance_df = df.loc[df["1_day_after_lower"] == True][["entrance_date", "entrance_price"]].reset_index()
+    entrance_df = df.loc[df["1_minute_after_lower"] == True][["entrance_time", "entrance_price"]].reset_index()
 
     if len(entrance_df) == 0 or entrance_df.empty:
         return None
@@ -136,21 +136,21 @@ def dark_cloud_cove(df):
     # TODO: update description and conditions for this method
     # TODO: before each step - explain what you're doing
 
-    df["up_trend_1_days_before"] = np.where((df["High"] > df["High"].shift(1)) & (df["Low"] > df["Low"].shift(1)),
+    df["up_trend_1_minute_before"] = np.where((df["High"] > df["High"].shift(1)) & (df["Low"] > df["Low"].shift(1)),
                                 True, False)
-    df["buyers_strong_today"] = np.where(df.shift(1)["Close"] > df.shift(1)["Open"], True, False)
-    df["dark_cloud_cove"] = np.where((df.up_trend_1_days_before == True) & (df.buyers_strong_today == True) & (df.shift(-1)["Open"] > df.shift(-1)["Close"]), True, False)
-    df["1_day_after_lower_than_75%_1_day_before"] = np.where(
+    df["buyers_strong_now"] = np.where(df.shift(1)["Close"] > df.shift(1)["Open"], True, False)
+    df["dark_cloud_cove"] = np.where((df.up_trend_1_minute_before == True) & (df.buyers_strong_now == True) & (df.shift(-1)["Open"] > df.shift(-1)["Close"]), True, False)
+    df["1_minute_after_lower_than_75%_1_minute_before"] = np.where(
         (df.dark_cloud_cove == True) & (df.shift(-1)["Low"] < ((df["Close"]-df["Open"])/4.0 +
                                                                df["Open"])) &
         (((df["Close"]-df["Open"])/4.0 + df["Open"]) < df.shift(-1)["High"]) &
         (df["Close"] < df.shift(-1)["Open"]), True, False)
-    df["entrance_date"] = df["Date"].shift(-1)
+    df["entrance_time"] = df["Datetime"].shift(-1)
     df["entrance_price"] = ((df["Close"]-df["Open"])/4.0 + df["Open"])
 
     df = pd.DataFrame.copy(df[3:-1])
 
-    entrance_df = df.loc[df["1_day_after_lower_than_75%_1_day_before"] == True][["entrance_date", "entrance_price"]].reset_index()
+    entrance_df = df.loc[df["1_minute_after_lower_than_75%_1_minute_before"] == True][["entrance_time", "entrance_price"]].reset_index()
 
     if len(entrance_df) == 0 or entrance_df.empty:
         return None
@@ -162,19 +162,19 @@ def evening_star(df):
     # TODO: update description and conditions for this method
     # TODO: before each step - explain what you're doing
 
-    df["up_trend_2_days_before"] = np.where((df["High"].shift(1) > df["High"].shift(2)) & (df["Low"].shift(1) > df["Low"].shift(2)),
+    df["up_trend_2_minutes_before"] = np.where((df["High"].shift(1) > df["High"].shift(2)) & (df["Low"].shift(1) > df["Low"].shift(2)),
                                 True, False)
-    df["buyers_strong_1_day_before"] = np.where(df.shift(1)["Close"] > df.shift(1)["Open"], True, False)
-    df["short_range_today"] = np.where(((df["Open"] > df["Close"]) & (df["Close"] > df.shift(1)["Close"])) | ((df["Close"] > df["Open"]) & (df["Open"] > df.shift(1)["Close"])), True, False)
-    df["evening_star"] = np.where((df.up_trend_2_days_before == True) & (df.buyers_strong_1_day_before == True) & (df.short_range_today == True), True, False)
-    df["1_day_after_lower_than_half_1_day_before"] = np.where(
+    df["buyers_strong_1_minute_before"] = np.where(df.shift(1)["Close"] > df.shift(1)["Open"], True, False)
+    df["short_range_now"] = np.where(((df["Open"] > df["Close"]) & (df["Close"] > df.shift(1)["Close"])) | ((df["Close"] > df["Open"]) & (df["Open"] > df.shift(1)["Close"])), True, False)
+    df["evening_star"] = np.where((df.up_trend_2_minutes_before == True) & (df.buyers_strong_1_minute_before == True) & (df.short_range_now == True), True, False)
+    df["1_minute_after_lower_than_half_1_minute_before"] = np.where(
         (df.evening_star == True) & (df.shift(-1)["Low"] < ((df.shift(1)["Close"]-df.shift(1)["Open"])/2.0 + df.shift(1)["Open"])) &(((df.shift(1)["Close"]-df.shift(1)["Open"])/2.0 + df.shift(1)["Open"]) < df.shift(-1)["High"]), True, False)
-    df["entrance_date"] = df["Date"].shift(-1)
+    df["entrance_time"] = df["Datetime"].shift(-1)
     df["entrance_price"] = ((df.shift(1)["Close"]-df.shift(1)["Open"])/2.0 + df.shift(1)["Open"])
 
     df = pd.DataFrame.copy(df[3:-1])
 
-    entrance_df = df.loc[df["1_day_after_lower_than_half_1_day_before"] == True][["entrance_date", "entrance_price"]].reset_index()
+    entrance_df = df.loc[df["1_minute_after_lower_than_half_1_minute_before"] == True][["entrance_time", "entrance_price"]].reset_index()
 
     if len(entrance_df) == 0 or entrance_df.empty:
         return None
