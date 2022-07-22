@@ -3,14 +3,14 @@ import statistics
 import pandas as pd
 from datetime import datetime
 from methods.doji_method import doji_method
-from get_all_snp_companies import get_all_snp_companies
+from utils.get_all_snp_companies import get_all_snp_companies
 
 
 run_start_time = datetime.utcnow().strftime("%Y-%m-%d")
 
 
 print(f"{datetime.utcnow().strftime('%Y-%m-%d-%H:%M:%S')} Gathering all S&P500 tickers")
-snp_tickers = get_all_snp_companies()['Symbol'].tolist()
+snp_tickers = get_all_snp_companies()
 
 
 sl_list = [2.0, 5.0, 10.0]

@@ -3,7 +3,7 @@ import pandas as pd
 
 def get_all_snp_companies():
     payload = pd.read_html('https://en.wikipedia.org/wiki/List_of_S%26P_500_companies')
-    return payload[0]
+    return payload[0]['Symbol'].tolist()
 
 
 if __name__=="__main__":
