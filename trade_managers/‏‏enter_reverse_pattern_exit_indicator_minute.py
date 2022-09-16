@@ -1,4 +1,4 @@
-from utils.download_stock_csvs import download_stock, download_stock_minute_data
+from utils.download_stock_csvs import download_stock_day, download_stock_minute_data
 import pandas as pd
 from datetime import datetime
 
@@ -37,7 +37,7 @@ def enter_reverse_pattern_exit_indicator(ticker, entrance_df, indicator, date):
             else:
                 change_percentage = None
         else:
-            last_date_df = pd.read_csv(download_stock(ticker)).iloc[-1]
+            last_date_df = pd.read_csv(download_stock_day(ticker)).iloc[-1]
             exit_price = last_date_df["Close"]
             exit_time = last_date_df["Date"]
             change_abs = exit_price - entrance_price
@@ -58,7 +58,7 @@ def enter_reverse_pattern_exit_indicator(ticker, entrance_df, indicator, date):
 if __name__ == "__main__":
     from locators.reverse_pattern_locators_minute import doji_long, doji_short, evening_star, dark_cloud_cove
     from indicators.momentum_indicators import awesome_oscillator
-    from utils.get_all_snp_companies import get_all_snp_companies
+    from utils.get_all_stocks import get_all_snp_stocks
     from utils.download_stock_csvs import download_stock_minute_data
     from os.path import dirname, abspath, exists
     from pathlib import Path
@@ -66,7 +66,7 @@ if __name__ == "__main__":
 
     project_path = dirname(dirname(abspath(__file__)))
 
-    stocks = get_all_snp_companies()
+    stocks = get_all_snp_stocks()
     today = datetime.utcnow()
     trade_date = datetime.utcnow() - relativedelta(months=1)
 

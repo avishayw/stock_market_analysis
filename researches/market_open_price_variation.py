@@ -1,1 +1,0 @@
-# Given I do 'Market Order' for the next day, how much the price vary on the first minute (high to low)?

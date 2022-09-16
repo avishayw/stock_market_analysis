@@ -1,4 +1,4 @@
-from utils.download_stock_csvs import download_stock
+from utils.download_stock_csvs import download_stock_day
 import pandas as pd
 from datetime import datetime
 
@@ -8,7 +8,7 @@ def enter_reverse_pattern_exit_indicator(ticker, entrance_df, indicator):
     if len(entrance_df) == 0 or entrance_df.empty:
         return None
 
-    stock_csv_path = download_stock(ticker)
+    stock_csv_path = download_stock_day(ticker)
     stock_df = pd.read_csv(stock_csv_path)
     stock_df = indicator(stock_df)
     sell_df = stock_df.loc[stock_df["Sell"] == True]
@@ -34,7 +34,7 @@ def enter_reverse_pattern_exit_indicator(ticker, entrance_df, indicator):
             else:
                 change_percentage = None
         else:
-            last_date_df = pd.read_csv(download_stock(ticker)).iloc[-1]
+            last_date_df = pd.read_csv(download_stock_day(ticker)).iloc[-1]
             exit_price = last_date_df["Close"]
             exit_date = last_date_df["Date"]
             change_abs = exit_price - entrance_price
@@ -55,13 +55,13 @@ def enter_reverse_pattern_exit_indicator(ticker, entrance_df, indicator):
 if __name__ == "__main__":
     from locators.reverse_pattern_locators_day import doji_long, doji_short, evening_star, dark_cloud_cove
     from indicators.momentum_indicators import awesome_oscillator
-    from utils.get_all_snp_companies import get_all_snp_companies
+    from utils.get_all_stocks import get_all_snp_stocks
     from os.path import dirname, abspath, exists
     from pathlib import Path
     from dateutil.relativedelta import relativedelta
 
     project_path = dirname(dirname(abspath(__file__)))
-    tickers = get_all_snp_companies()
+    tickers = get_all_snp_stocks()
     total_results_df = pd.DataFrame([{"Stock": None, "entrance_date": None, "entrace_price": None, "exit_date": None, "exit_price": None, "trade_time_in_days": None, "win": None, "change": None, "change_%": None}])
 
     def date_to_datetime(row):
@@ -69,10 +69,10 @@ if __name__ == "__main__":
 
     for ticker in tickers:
         print(f"{ticker}")
-        path = download_stock(ticker)
+        path = download_stock_day(ticker)
         if not path:
             continue
-        stock_df = pd.read_csv(download_stock(ticker))
+        stock_df = pd.read_csv(download_stock_day(ticker))
         stock_df["datetime"] = pd.to_datetime(stock_df["Date"])
         stock_df = stock_df.loc[stock_df["datetime"] > datetime.utcnow() - relativedelta(years=1)]
         stock_df.drop(columns=['datetime'])

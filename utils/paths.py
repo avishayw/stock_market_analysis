@@ -18,10 +18,26 @@ def save_under_results_path(path):
     return Path(Path(project_path(), 'results'), path)
 
 
+def save_under_models_path(path):
+    return Path(Path(project_path(), 'models'), path)
+
+
+def random_stock_data_path():
+    return fr'C:\Users\Avishay Wasse\PycharmProjects\stock_market_analysis\random_stock_data'
+
+
+def save_under_random_stock_data_path(path):
+    return Path(random_stock_data_path(), path)
+
+
 def make_dir_under_path(path, dir):
     path = join(path,dir)
     if not exists(path):
         mkdir(path)
+    return path
+
+
+
 
 
 if __name__=="__main__":

@@ -1,5 +1,5 @@
 from locators.reverse_pattern_locators_day import doji_long
-from utils.download_stock_csvs import download_stock
+from utils.download_stock_csvs import download_stock_day
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
@@ -9,7 +9,7 @@ import time
 
 def exit_tp_sl(ticker, entrance_df, tp_percentage, sl_percentage):
 
-    df = pd.read_csv(download_stock(ticker))
+    df = pd.read_csv(download_stock_day(ticker))
 
     start = time.time()
 

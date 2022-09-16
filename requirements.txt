@@ -4,4 +4,14 @@ yfinance
 ta
 matplotlib
 sklearn
-statmodels
+seaborn
+numpy
+mplfinance
+pandas_datareader
+tensorflow
+keras
+astropy
+dateutil
+pyarrow
+fastparquet
+kaleido
