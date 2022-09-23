@@ -28,7 +28,8 @@ def price_density(df, period, inplace=True, threshold=None):
     box_range = highest_high - lowest_low
     day_range = df['High'] - df['Low']
     sum_of_individual_changes = day_range.rolling(period).sum()
-    density = sum_of_individual_changes/box_range
+    # density = sum_of_individual_changes/box_range
+    density = box_range/sum_of_individual_changes
     if inplace:
         df[f'PriceDensity{period}'] = density
         if threshold:

@@ -1,6 +1,7 @@
 from os.path import dirname, abspath, exists, join
 from os import mkdir
 from pathlib import Path, PurePath
+import glob
 
 
 def project_path():
@@ -37,9 +38,12 @@ def make_dir_under_path(path, dir):
     return path
 
 
-
+def get_in_sample_data_csvs():
+    return glob.glob(r"C:\Users\Avishay Wasse\PycharmProjects\stock_market_analysis\in-sample-daily-data" + '/*.csv')
 
 
 if __name__=="__main__":
+    import json
 
-    print(save_under_results_path("APPL.csv"))
+    # print(save_under_results_path("APPL.csv"))
+    csvs = glob.glob(r"C:\Users\Avishay Wasse\PycharmProjects\stock_market_analysis\in-sample-daily-data" + '/*.csv')

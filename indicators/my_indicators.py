@@ -1,8 +1,12 @@
+import datetime
+
 import numpy as np
 import pandas as pd
 pd.options.mode.chained_assignment = None
+from scipy.stats import gmean, hmean, skew, kurtosis
 from machine_learning_stuff.linear_regression import rolling_ols
 from sklearn.preprocessing import MinMaxScaler
+from peakutils import baseline
 
 
 def percental_atr(df, period):
@@ -110,91 +114,298 @@ def williams_r_all_v1(df, period):
 
 def range_moving_average(df, period):
     start_idx = df.index[0]
-    df[f'range_moving_average_{period}'] = np.nan
+    df[f'RMA{period}'] = np.nan
     for row in range(period, len(df)):
         prices = []
         for i in range(period):
             high = df.iloc[row-i]['High']
             low = df.iloc[row-i]['Low']
             prices = prices + list(np.arange(low, high, .01))
-        df.loc[start_idx + row, f'range_moving_average_{period}'] = np.mean(prices)
+        df.loc[start_idx + row, f'RMA{period}'] = np.mean(prices)
     return df
 
 
+def mode_price(df, period, nbins):
+    start_idx = df.index[0]
+    df[f'MODE{period}'] = np.nan
+
+    for i in range(period, len(df)):
+        sample_df = df[i-period:i].copy()
+        prices = []
+
+        for row in range(len(sample_df)):
+            high = sample_df.iloc[row]['High']
+            low = sample_df.iloc[row]['Low']
+            prices = prices + list(np.arange(low, high, .01))
+
+        prices = sorted(prices)
+
+        # histogram
+        bins = np.linspace(np.ceil(min(prices)),
+                           np.floor(max(prices)),
+                           nbins)
+
+        occurrences, price_ranges = np.histogram(prices, bins)
+        histogram_dict = {}
+
+        for j in range(len(occurrences)):
+            histogram_dict[occurrences[j]] = (round(price_ranges[j], 2), round(price_ranges[j + 1], 2))
+
+        df.loc[start_idx + i, f'MODE{period}'] = np.mean(histogram_dict[max(occurrences)])
+
+    return df
+
+
+def geometric_mean(df, period):
+
+    start_idx = df.index[0]
+    df[f'GMEAN{period}'] = np.nan
+
+    for i in range(period, len(df)):
+        price_list = df[i-period:i]['Close'].tolist()
+        df.loc[start_idx + i, f'GMEAN{period}'] = gmean(price_list)
+
+    return df
+
+
+def harmonic_mean(df, period):
+
+    start_idx = df.index[0]
+    df[f'HMEAN{period}'] = np.nan
+
+    for i in range(period, len(df)):
+        price_list = df[i-period:i]['Close'].tolist()
+        df.loc[start_idx + i, f'HMEAN{period}'] = hmean(price_list)
+
+    return df
+
+
+def stdev_bands(df, period, stdevs=1):
+
+    start_idx = df.index[0]
+    df[f'{stdevs}+SMA{period}'] = np.nan
+    df[f'{stdevs}-SMA{period}'] = np.nan
+
+    for i in range(period, len(df)):
+        sample_df = df[i - period:i].copy()
+        prices = []
+
+        for row in range(len(sample_df)):
+            high = sample_df.iloc[row]['High']
+            low = sample_df.iloc[row]['Low']
+            prices = prices + list(np.arange(low, high, .01))
+
+        mean = np.mean(prices)
+        std = np.std(prices)
+        top = mean + std*stdevs
+        bottom = mean - std*stdevs
+        df.loc[start_idx + i, f'{stdevs}+SMA{period}'] = top
+        df.loc[start_idx + i, f'{stdevs}-SMA{period}'] = bottom
+
+    return df
+
+
+def prices_skewness(df, period):
+    start_idx = df.index[0]
+    df[f'Sk{period}'] = np.nan
+
+    for i in range(period, len(df)):
+        sample_df = df[i - period:i].copy()
+        prices = []
+
+        for row in range(len(sample_df)):
+            high = sample_df.iloc[row]['High']
+            low = sample_df.iloc[row]['Low']
+            prices = prices + list(np.arange(low, high, .01))
+
+        df.loc[start_idx + i, f'Sk{period}'] = skew(prices)
+
+    return df
+
+
+def prices_kurtosis(df, period):
+    start_idx = df.index[0]
+    df[f'K{period}'] = np.nan
+
+    for i in range(period, len(df)):
+        sample_df = df[i - period:i].copy()
+        prices = []
+
+        for row in range(len(sample_df)):
+            high = sample_df.iloc[row]['High']
+            low = sample_df.iloc[row]['Low']
+            prices = prices + list(np.arange(low, high, .01))
+
+        df.loc[start_idx + i, f'K{period}'] = kurtosis(prices)
+
+    return df
+
+
+def rolling_baseline(df, src, period):
+    start_idx = df.index[0]
+    df[f'baseline{period}'] = np.nan
+
+    for i in range(period, len(df), period):
+        sample_df = df[i-period: i].copy()
+        current_baseline = baseline(sample_df[src])
+        for j in range(period):
+            df.loc[start_idx + i + j, f'baseline{period}'] = current_baseline[j]
+
+    return df
+
+
+def volume_profile(df, idx, period, percentile=5):
+    sample_df = df[idx-period:idx].copy()
+    volume_profile_dict = {}
+    close_prices = sample_df['Close'].tolist()
+    volume = sample_df['Volume'].tolist()
+    close_ranges = []
+    close_list = [x for x in close_prices if (x > 0) and (x <= np.percentile(close_prices, percentile))]
+    if len(close_list) > 0:
+        close_ranges.append(close_list)
+    total_volume_list = []
+    for i in range(percentile, 100, percentile):
+        close_list = [x for x in close_prices if (x > np.percentile(close_prices, i)) and (x <= np.percentile(close_prices, i+percentile))]
+        if len(close_list) > 0:
+            close_ranges.append(close_list)
+    for close_range in close_ranges:
+        total_volume = 0
+        for close in close_range:
+            total_volume += volume[close_prices.index(close)]
+        total_volume_list.append(total_volume)
+        volume_profile_dict[total_volume] = close_range
+    total_volume_list = sorted(total_volume_list, reverse=True)
+    volume_profile_dict_sorted = {}
+    for total_volume in total_volume_list:
+        # TODO: remove print
+        if len(volume_profile_dict[total_volume]) == 0:
+            print('empty volume')
+        volume_profile_dict_sorted[f'{total_volume/1000000}M'] = (np.mean(volume_profile_dict[total_volume]), volume_profile_dict[total_volume])
+
+    return volume_profile_dict_sorted
+
+
+
 if __name__=="__main__":
-    from utils.get_all_stocks import get_all_nasdaq_100_stocks, get_all_nyse_composite_stocks
+    from utils.get_all_stocks import get_all_nasdaq_100_stocks, get_all_nyse_composite_stocks, in_sample_tickers
     from utils.download_stock_csvs import download_stock_day
     from utils.paths import save_under_results_path
-    from indicators.momentum_indicators import rate_of_change, williams_r, rsi
+    from indicators.momentum_indicators import rate_of_change, williams_r, rsi, simple_moving_average
     from indicators.trend_indicators import exponential_moving_average
     from machine_learning_stuff.linear_regression import rolling_ols
     from plotting.candlestick_chart import candlestick_chart_fig, add_line_to_candlestick_chart
     import plotly.graph_objects as go
     from plotly.subplots import make_subplots
+    from plotting.candlestick_chart import multiple_windows_chart, add_markers_to_candlestick_chart
+    from trade_managers._ma_roc_er_trading import ma_roc_er_signals
     import pandas as pd
+    import numpy as np
     import yfinance as yf
     import json
     import random
     import time
+    from datetime import datetime
 
     start = time.time()
 
-    ticker = 'NXPI'
-    df = pd.read_csv(download_stock_day(ticker))
+    tickers = in_sample_tickers()
+    ticker = random.choice(tickers)
+    df = pd.read_csv(download_stock_day(ticker)).reset_index()
+    backup_df = df.copy()
+    df['datetime'] = pd.to_datetime(df['Date'])
+    df = ma_roc_er_signals(df)
+    df['buy_markers'] = np.where(df['buy_signal'], df['Low']*0.999, np.nan)
+    df['sell_markers'] = np.where(df['sell_signal'], df['High']*1.001, np.nan)
+    last_buy_signal_date = df.loc[df['buy_signal']].iloc[-1]['datetime']
+    start_date = datetime(2020, 1, 1, 0, 0, 0)
+    # end_date = datetime(2021, 8, 27, 0, 0, 0)
+    end_date = last_buy_signal_date
+    df = df.loc[(df['datetime'] >= start_date) & (df['datetime'] <= end_date)]
+    period = 200
+    volume_profile = volume_profile(df, len(df), period, percentile=5)
+    volume_columns = []
+    for i, volume in enumerate(volume_profile.keys()):
+        volume_columns.append(f'high_volume_{i}')
+        df[f'high_volume_{i}'] = volume_profile[volume][0]
+        if i == 4:
+            break
 
-    periods = [5, 9, 20, 31, 63, 126, 252]
+    fig = multiple_windows_chart(ticker, df, {(1, ''): volume_columns})
+    fig = add_markers_to_candlestick_chart(fig, df['Date'], df['buy_markers'], 'BUY', 1)
+    fig = add_markers_to_candlestick_chart(fig, df['Date'], df['sell_markers'], 'SELL', 0)
+    fig.show()
+    fig = candlestick_chart_fig(backup_df, ticker)
+    fig.show()
+    exit()
 
-    for period in periods:
-        df = rate_of_change(df, period)
-        df = percental_atr(df, period)
-        df = exponential_moving_average(df, 'High', period)
-        df[f'EMA{period}High'] = df[f'EMA{period}']
-        df = exponential_moving_average(df, 'Low', period)
-        df[f'EMA{period}Low'] = df[f'EMA{period}']
-        df = exponential_moving_average(df, 'Close', period)
-        df = williams_r(df, period)
-        df = rsi(df, period)
-
-    df = df[-2016:]
-
-
-    # Create subplots and mention plot grid size
-    fig = make_subplots(rows=5, cols=1, shared_xaxes=True,
-                        vertical_spacing=0.03, subplot_titles=(f'{ticker}','Williams R%', 'RSI', '%ATR', 'ROC'),
-                        row_width=[0.2, 0.2, 0.2, 0.2, 0.5])
-
-    # Plot OHLC on 1st row
-    fig.add_trace(go.Candlestick(x=df["Date"], open=df["Open"], high=df["High"],
-                                 low=df["Low"], close=df["Close"], name="OHLC"),
-                  row=1, col=1)
-
-    for period in periods:
-        fig.add_trace(go.Scatter(x=df['Date'], y=df[f'EMA{period}'],
-                                 name=f'EMA{period}'),
-                      row=1, col=1)
-        fig.add_trace(go.Scatter(x=df['Date'], y=df[f'EMA{period}High'],
-                                 name=f'EMA{period}High'),
-                      row=1, col=1)
-        fig.add_trace(go.Scatter(x=df['Date'], y=df[f'EMA{period}Low'],
-                                 name=f'EMA{period}Low'),
-                      row=1, col=1)
-        fig.add_trace(go.Scatter(x=df['Date'], y=df[f'Williams_R%_{period}'],
-                                 name=f'Williams_R%_{period}'),
-                      row=2, col=1)
-        fig.add_trace(go.Scatter(x=df['Date'], y=df[f'RSI{period}'],
-                                 name=f'RSI{period}'),
-                      row=3, col=1)
-        fig.add_trace(go.Scatter(x=df['Date'], y=df[f'%ATR{period}'],
-                                 name=f'%ATR{period}'),
-                      row=4, col=1)
-        fig.add_trace(go.Scatter(x=df['Date'], y=df[f'ROC{period}'],
-                                 name=f'ROC{period}'),
-                      row=5, col=1)
-
-    fig.update(layout_xaxis_rangeslider_visible=False)
+    stdevs = 2
+    df = range_moving_average(df, period)
+    df = stdev_bands(df, period, stdevs=stdevs)
+    df = prices_skewness(df, period)
+    df = prices_kurtosis(df, period)
+    df[f'Sk-K{period}'] = df[f'Sk{period}'] - df[f'K{period}'] # Can provide information given that values ranged ~ [-1,1]
+    df[f'KE{period}'] = df[f'K{period}'] - 3
+    fig = multiple_windows_chart(ticker,
+                                 df,
+                                 {(1,''): [f'{stdevs}+SMA{period}', f'{stdevs}-SMA{period}', f'RMA{period}'],
+                                  (2, 'Skewness'): [f'Sk{period}'],
+                                  (3, 'Kurtosis'): [f'K{period}'],
+                                  (4, 'Sk - K'): [f'Sk-K{period}']})
     fig.show()
 
-    print(time.time() - start)
+    # periods = [5, 9, 20, 31, 63, 126, 252]
+    #
+    # for period in periods:
+    #     df = rate_of_change(df, period)
+    #     df = percental_atr(df, period)
+    #     df = exponential_moving_average(df, 'High', period)
+    #     df[f'EMA{period}High'] = df[f'EMA{period}']
+    #     df = exponential_moving_average(df, 'Low', period)
+    #     df[f'EMA{period}Low'] = df[f'EMA{period}']
+    #     df = exponential_moving_average(df, 'Close', period)
+    #     df = williams_r(df, period)
+    #     df = rsi(df, period)
+    #
+    # df = df[-2016:]
+    #
+    #
+    # # Create subplots and mention plot grid size
+    # fig = make_subplots(rows=5, cols=1, shared_xaxes=True,
+    #                     vertical_spacing=0.03, subplot_titles=(f'{ticker}','Williams R%', 'RSI', '%ATR', 'ROC'),
+    #                     row_width=[0.2, 0.2, 0.2, 0.2, 0.5])
+    #
+    # # Plot OHLC on 1st row
+    # fig.add_trace(go.Candlestick(x=df["Date"], open=df["Open"], high=df["High"],
+    #                              low=df["Low"], close=df["Close"], name="OHLC"),
+    #               row=1, col=1)
+    #
+    # for period in periods:
+    #     fig.add_trace(go.Scatter(x=df['Date'], y=df[f'EMA{period}'],
+    #                              name=f'EMA{period}'),
+    #                   row=1, col=1)
+    #     fig.add_trace(go.Scatter(x=df['Date'], y=df[f'EMA{period}High'],
+    #                              name=f'EMA{period}High'),
+    #                   row=1, col=1)
+    #     fig.add_trace(go.Scatter(x=df['Date'], y=df[f'EMA{period}Low'],
+    #                              name=f'EMA{period}Low'),
+    #                   row=1, col=1)
+    #     fig.add_trace(go.Scatter(x=df['Date'], y=df[f'Williams_R%_{period}'],
+    #                              name=f'Williams_R%_{period}'),
+    #                   row=2, col=1)
+    #     fig.add_trace(go.Scatter(x=df['Date'], y=df[f'RSI{period}'],
+    #                              name=f'RSI{period}'),
+    #                   row=3, col=1)
+    #     fig.add_trace(go.Scatter(x=df['Date'], y=df[f'%ATR{period}'],
+    #                              name=f'%ATR{period}'),
+    #                   row=4, col=1)
+    #     fig.add_trace(go.Scatter(x=df['Date'], y=df[f'ROC{period}'],
+    #                              name=f'ROC{period}'),
+    #                   row=5, col=1)
+    #
+    # fig.update(layout_xaxis_rangeslider_visible=False)
+    # fig.show()
+    #
+    # print(time.time() - start)
 
     # ticker = 'UPST'
     # df = pd.read_csv(download_stock_day(ticker))[-1008:]

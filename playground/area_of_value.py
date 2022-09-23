@@ -9,6 +9,7 @@ import math
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from astropy.stats import freedman_bin_width
+from scipy.stats import skew, kurtosis
 
 
 def price_histogram(ticker, df, idx, period):
@@ -27,29 +28,47 @@ def price_histogram(ticker, df, idx, period):
     # histogram
     # nbins = int(math.ceil(math.sqrt(len(prices))))
     bin_width = freedman_bin_width(prices)
-    nbins = math.ceil((np.max(prices) - np.min(prices)) / bin_width)
+    # nbins = math.ceil((np.max(prices) - np.min(prices)) / bin_width)
+    nbins = 100
     # print(nbins, bin_width)
     bins = np.linspace(np.ceil(min(prices)),
                        np.floor(max(prices)),
                        nbins)
 
     occurrences, price_ranges = np.histogram(prices, bins)
-    histogram_dict = {}
+    # histogram_dict = {}
 
-    for i in range(len(occurrences)):
-        histogram_dict[occurrences[i]] = (round(price_ranges[i], 2), round(price_ranges[i + 1], 2))
+    # for i in range(len(occurrences)):
+    #     histogram_dict[occurrences[i]] = (round(price_ranges[i], 2), round(price_ranges[i + 1], 2))
 
     print(
-        f'stats: mean: {np.mean(occurrences)} stdev: {np.std(occurrences)} coefficient of variation: {np.std(occurrences) / np.mean(occurrences)}')
+        f'stats: mean: {np.mean(prices)} stdev: {np.std(prices)} coefficient of variation: {np.std(prices) / np.mean(prices)}'
+        f' 10th: {np.percentile(prices, 10)} 90th: {np.percentile(prices, 90)}')
 
-    print(f'days back: {period}')
-    print(histogram_dict[max(occurrences)])
+    # print(f'days back: {period}')
+    # print(histogram_dict[max(occurrences)])
 
-    plt.xlim([min(prices), max(prices)])
+    prices_skew = np.round(skew(prices), 3)
+    prices_kurtosis = np.round(kurtosis(prices), 3)
+    stdev = np.std(prices)
+    close = df.shift(1).iloc[idx]['Close']
+
+    plt.xlim([min(min(prices), close)*0.98, max(max(prices), close)*1.02])
     plt.hist(prices, bins=bins, alpha=0.5)
+    plt.title(ticker)
+    plt.axvline(np.mean(prices), color='r')
+    plt.axvline(np.mean(prices) + stdev, color='k')
+    plt.axvline(np.mean(prices) - stdev, color='k')
+    plt.axvline(close, color='m')
+    plt.axvline(np.percentile(prices, 10), color='y')
+    plt.axvline(np.percentile(prices, 90), color='y')
+    # for mode in modes:
+    #     plt.axvline(mode, color='g')
+    plt.axvline(np.median(prices), color='b')
+    plt.text(np.percentile(prices, 30), (max(occurrences)+2), f'skew: {prices_skew} kurtosis: {prices_kurtosis}')
 
-    plt.savefig(fr"C:\Users\Avishay Wasse\PycharmProjects\stock_market_analysis\results\histograms\ALGN_10\{ticker}_{df.iloc[idx]['Date']}_{period}.png")
-    # plt.show()
+    # plt.savefig(fr"C:\Users\Avishay Wasse\PycharmProjects\stock_market_analysis\results\histograms\{ticker}_{df.iloc[idx]['Date']}_{period}.html")
+    plt.show()
     plt.close()
 
 
@@ -144,13 +163,16 @@ if __name__=="__main__":
     from plotting.candlestick_chart import candlestick_chart_fig, add_line_to_candlestick_chart
     import pandas as pd
     import time
+    from utils.get_all_stocks import in_sample_tickers
 
-    ticker = 'ALGN'
-    df = pd.read_csv(download_stock_day(ticker))[-2016:].reset_index()
-    # fig = candlestick_chart_fig(df, ticker)
-    # fig.show()
+    tickers = in_sample_tickers()
+    for ticker in tickers:
+        df = pd.read_csv(download_stock_day(ticker)).reset_index()
+        # fig = candlestick_chart_fig(df, ticker)
+        # fig.show()
 
-    for i in range(1008, len(df)):
-        print(df.iloc[i]['Date'])
-        print(df.iloc[i]['Close'])
-        price_histogram(ticker, df, i, 10)
+        # for i in range(1008, len(df)):
+        print(df.iloc[-1]['Date'])
+        print('Open', df.iloc[-1]['Open'])
+        print('Close', df.iloc[-2]['Close'])
+        price_histogram(ticker, df, len(df) - 2, 200)

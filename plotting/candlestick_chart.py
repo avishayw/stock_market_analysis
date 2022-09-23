@@ -50,7 +50,7 @@ def multiple_windows_chart(ticker, df, chart_dict):
     for row in chart_dict.keys():
         if row[0] == 1:
             continue
-        row_width.append(0.2)
+        row_width.append(0.1)
         subplot_titles.append(row[1])
     row_width.append(0.5)
 
@@ -73,4 +73,24 @@ def multiple_windows_chart(ticker, df, chart_dict):
 
 
 if __name__ == "__main__":
-    pass
+    import yfinance as yf
+    import pandas as pd
+    import numpy as np
+    import peakutils
+    from indicators.my_indicators import rolling_baseline
+    from machine_learning_stuff.linear_regression import rolling_backward_linear_regression
+
+    ticker = 'ALGN'
+    df = yf.Ticker(ticker).history(period='max', interval='1d').reset_index()[-4032:]
+    period = 100
+    df = rolling_backward_linear_regression(df, 'Close', period)
+    roc_period = 20
+    df['score_roc'] = df['score'] - df.shift(roc_period)['score']
+    # df['score_roc'] = np.where(df['score_roc'] < df['score_roc'].mean()*np.std(df['score_roc'].tolist())*5, df['score_roc'], np.nan)
+
+    chart_dict = {(2, 'Regression Coefficient'): ['coefficient'],
+                  (3, 'Regression Score'): ['score'],
+                  (4, 'Regression Score Rate of Change'): ['score_roc']}
+
+    fig = multiple_windows_chart(ticker, df, chart_dict)
+    fig.show()

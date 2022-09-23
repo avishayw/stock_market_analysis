@@ -15,3 +15,5 @@ dateutil
 pyarrow
 fastparquet
 kaleido
+stocksymbol
+google

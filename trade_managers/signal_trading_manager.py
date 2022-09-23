@@ -117,6 +117,9 @@ def signal_trading_manager(ticker, df):
             if df.iloc[i]['buy_short_signal']:
                 exit_price = df.shift(-1).iloc[i]['Open']
                 exit_date = df.shift(-1).iloc[i]['Date']
+                if np.isnan(exit_price):
+                    short_position = False
+                    continue
                 cap = cap * (1.0 + ((enter_price - exit_price) / enter_price))
                 period_df = pd.DataFrame.copy(df.loc[(df['Datetime'] >= datetime.strptime(enter_date, '%Y-%m-%d')) &
                                                      (df['Datetime'] <= datetime.strptime(exit_date, '%Y-%m-%d'))])
@@ -133,10 +136,10 @@ def signal_trading_manager(ticker, df):
                               'exit_price': exit_price,
                               'win': exit_price < enter_price,
                               'change%': ((enter_price - exit_price) / enter_price) * 100,
-                              'period_max': period_max,
-                              'period_max_date': max_date,
-                              'period_min': period_min,
-                              'period_min_date': min_date}
+                              'period_best_change%': ((enter_price - period_min) / enter_price) * 100,
+                              'period_best_date': min_date,
+                              'period_worst_change%': ((enter_price - period_max) / enter_price) * 100,
+                              'period_worst_date': max_date}
                 print(trade_dict)
                 trades.append(trade_dict)
                 short_position = False
@@ -163,10 +166,10 @@ def signal_trading_manager(ticker, df):
                               'exit_price': exit_price,
                               'win': exit_price > enter_price,
                               'change%': ((exit_price - enter_price) / enter_price) * 100,
-                              'period_max': period_max,
-                              'period_max_date': max_date,
-                              'period_min': period_min,
-                              'period_min_date': min_date}
+                              'period_best_change%': ((period_max - enter_price) / enter_price) * 100,
+                              'period_best_date': max_date,
+                              'period_worst_change%': ((period_min - enter_price) / enter_price) * 100,
+                              'period_worst_date': min_date}
                 print(trade_dict)
                 trades.append(trade_dict)
                 long_position = False
