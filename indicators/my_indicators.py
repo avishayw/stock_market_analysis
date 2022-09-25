@@ -316,14 +316,19 @@ if __name__=="__main__":
     df = ma_roc_er_signals(df)
     df['buy_markers'] = np.where(df['buy_signal'], df['Low']*0.999, np.nan)
     df['sell_markers'] = np.where(df['sell_signal'], df['High']*1.001, np.nan)
-    last_buy_signal_date = df.loc[df['buy_signal']].iloc[-1]['datetime']
-    start_date = datetime(2020, 1, 1, 0, 0, 0)
+    buy_df = df.loc[df['buy_signal']].copy()
+    idx = int(np.ceil(len(buy_df)*0.9))
+    print(idx)
+    last_buy_signal_date = df.loc[df['buy_signal']].iloc[idx]['datetime']
+    start_date = datetime(2018, 1, 1, 0, 0, 0)
     # end_date = datetime(2021, 8, 27, 0, 0, 0)
     end_date = last_buy_signal_date
     df = df.loc[(df['datetime'] >= start_date) & (df['datetime'] <= end_date)]
     period = 200
     volume_profile = volume_profile(df, len(df), period, percentile=5)
     volume_columns = []
+    # Sorting the levels according to distance from current price
+    price_levels = []
     for i, volume in enumerate(volume_profile.keys()):
         volume_columns.append(f'high_volume_{i}')
         df[f'high_volume_{i}'] = volume_profile[volume][0]

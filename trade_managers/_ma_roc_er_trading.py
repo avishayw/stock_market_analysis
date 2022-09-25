@@ -495,18 +495,24 @@ def ma_roc_er_trading_v4(ticker,
             linreg_df = df.loc[df['Datetime'] <= df.iloc[i]['Datetime']].copy()
             stock_linreg = {}
             for period in linreg_periods:
-                roc, coefficient, score = backward_linear_regression(linreg_df, 'Close', len(linreg_df), period)
-                stock_linreg[f'stock_linear_roc_{period}'] = roc
-                stock_linreg[f'stock_linear_score_{period}'] = score
+                try:
+                    roc, coefficient, score, model = backward_linear_regression(linreg_df, 'Close', len(linreg_df), period)
+                    stock_linreg[f'stock_linear_roc_{period}'] = roc
+                    stock_linreg[f'stock_linear_score_{period}'] = score
+                except ValueError as e:
+                    print(e)
 
             # SPY (market condition)
             spy = spy_df.loc[spy_df['Datetime'] <= df.iloc[i]['Datetime']].copy()
             linreg_periods = [20, 50, 200]
             spy_linreg = {}
             for period in linreg_periods:
-                roc, coefficient, score = backward_linear_regression(spy, 'Close', len(spy), period)
-                spy_linreg[f'spy_linear_roc_{period}'] = roc
-                spy_linreg[f'spy_linear_score_{period}'] = score
+                try:
+                    roc, coefficient, score, model = backward_linear_regression(spy, 'Close', len(spy), period)
+                    spy_linreg[f'spy_linear_roc_{period}'] = roc
+                    spy_linreg[f'spy_linear_score_{period}'] = score
+                except TypeError as e:
+                    print(e)
 
             # Volume Profile (area of value)
             sample_df = df.loc[df['Datetime'] <= df.iloc[i]['Datetime']].copy()

@@ -2,9 +2,12 @@ from ta.trend import EMAIndicator, ADXIndicator, AroonIndicator
 import math
 
 
-def exponential_moving_average(df, src, period):
-    df[f'EMA{period}'] = EMAIndicator(df[src], period).ema_indicator()
-    return df
+def exponential_moving_average(df, src, period, inplace=True):
+    ema = EMAIndicator(df[src], period).ema_indicator()
+    if inplace:
+        df[f'EMA{period}'] = ema
+        return df
+    return ema
 
 
 def zero_lag_ema(df, period):

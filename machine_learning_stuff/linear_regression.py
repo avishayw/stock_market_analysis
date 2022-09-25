@@ -69,7 +69,7 @@ def backward_linear_regression(df, src, idx, period):
     sample_df_datetime = pd.to_datetime(sample_df['Date'])
     sample_df_epoch = sample_df_datetime.apply(lambda x: x.timestamp())
     # epoch daily for coefficient convenience
-    sample_df_epoch = sample_df_epoch / 86400.0
+    sample_df_epoch = sample_df_epoch
     x = sample_df_epoch.to_numpy().reshape(-1, 1)
     y = sample_df[src].to_numpy()
     model = LinearRegression()
@@ -81,7 +81,7 @@ def backward_linear_regression(df, src, idx, period):
     y1 = model.predict([x[1]])[0]
     y0 = model.predict([x[0]])[0]
     roc = ((y1-y0)/y0)*100.0
-    return roc, model.coef_*100.0, model.score(x, y)
+    return roc, model.coef_, model.score(x, y), model
 
 
 def rolling_backward_linear_regression(df, src, period):
@@ -114,6 +114,31 @@ def linear_regression_score_per_period(ticker, df, min_period=5, max_period=200,
     pd.DataFrame(score_dict).to_csv(save_under_results_path(f'{ticker}_score_df.csv'))
 
 
+def detect_trend_using_linreg(df, score_th=0.6, overfit=0.95, initial_period=5):
+    """
+    Function which will find linear regressions with score > 0.7 for the whole df
+    """
+    start_idx = df.index[0]
+    df_epoch = pd.to_datetime(df['Date']).apply(lambda x: x.timestamp())
+    idx = len(df)
+    previous_idx = idx-1
+    while idx > initial_period and idx != previous_idx:
+        previous_idx = idx
+        print(idx)
+        period = initial_period
+        score = 0
+        while period < idx and not (score_th < score < overfit):
+            period += 1
+            roc, coef, score, model = backward_linear_regression(df, 'Close', idx, period)
+        if score >= score_th:
+            df.loc[start_idx + idx - period, f'linreg_{score_th}<score<{overfit}'] = df.iloc[idx-period]['Close']
+            for i in reversed(range(1,period)):
+                df.loc[start_idx + idx - i, f'linreg_{score_th}<score<{overfit}'] = model.predict([[df_epoch.iloc[idx - i - 1]]])
+            idx = idx - period
+
+    return df
+
+
 if __name__=="__main__":
     import datetime
     import pandas as pd
@@ -126,14 +151,12 @@ if __name__=="__main__":
     # measuring market condition
     ticker = 'AMZN'
 
-    # df = pd.read_csv(download_stock_day(ticker)).reset_index()[-4032:]
-    df = yf.Ticker(ticker).history(period='730d', interval='1h').reset_index()
-    df['Date'] = df['index']
-    print(df.iloc[-1]['Date'])
-    print(df.iloc[-1]['Close'], df.iloc[-2]['Close'])
-    linear_regression_score_per_period(ticker, df)
-    # regression_period = 2
-    # print(backward_linear_regression(df, 'Close', len(df), regression_period))
-    # df = rolling_backward_linear_regression(df, 'Close', regression_period)
-    # df.to_csv(save_under_results_path(f'{ticker}_rolling_regression_{regression_period}.csv'))
+    df = pd.read_csv(download_stock_day(ticker))
+    score_th = 0.65
+    overfit = 0.75
+    df = detect_trend_using_linreg(df, score_th=score_th, overfit=overfit)
+
+    fig = candlestick_chart_fig(df, ticker)
+    fig = add_line_to_candlestick_chart(fig, df['Date'], df[f'linreg_{score_th}<score<{overfit}'], f'linreg_{score_th}<score<{overfit}')
+    fig.show()
 
