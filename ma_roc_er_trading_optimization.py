@@ -624,9 +624,6 @@ if __name__ == '__main__':
 
     combinations = product(*params_list)
 
-    print(len(list(combinations)))
-    exit()
-
     for combination in combinations:
 
         combination_str = '_'.join([str(x) for x in combination])
