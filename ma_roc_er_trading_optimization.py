@@ -633,7 +633,7 @@ if __name__ == '__main__':
             for result in results:
                 all_trades = all_trades + result
 
-        combination_df = pd.DataFrame(all_trades)
+        combination_df = pd.DataFrame(all_trades).dropna()
         print(f'sma1_period: {combination[0]}\n',
               f'sma2_period: {combination[1]}\n',
               f'sma1_uptrend_roc_period: {combination[2]}\n',
@@ -646,6 +646,9 @@ if __name__ == '__main__':
               f'sma1_downtrend_roc_th: {combination[9]}\n',
               f'sma1_downtrend_er_th: {combination[10]}\n')
         print(f'Win Rate: {len(combination_df.loc[combination_df["win"]])/len(combination_df)}')
-        print(f'Mean Change %: {np.mean(combination_df["change%"].tolist())}\n')
+        print(f'Mean Change %: {np.mean(combination_df["change%"].tolist())}')
+        print(f'Total trades: {len(all_trades)}')
+        if len(all_trades) > 0:
+            print(f'Sample error: {(1/np.sqrt(len(all_trades)))*100}')
 
-        combination_df.to_csv(f'{combination_str}_all_trades.csv')
+        pd.DataFrame(all_trades).to_csv(f'{combination_str}_all_trades.csv')
