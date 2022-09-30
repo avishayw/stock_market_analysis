@@ -651,4 +651,4 @@ if __name__ == '__main__':
         if len(all_trades) > 0:
             print(f'Sample error: {(1/np.sqrt(len(all_trades)))*100}')
 
-        pd.DataFrame(all_trades).to_parquet(f'{combination_str}_all_trades.csv')
+        pd.DataFrame(all_trades).to_parquet(f'{combination_str}_all_trades.parquet')
