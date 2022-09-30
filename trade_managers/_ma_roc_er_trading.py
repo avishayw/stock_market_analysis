@@ -4,7 +4,8 @@ import numpy as np
 from datetime import datetime
 from measurements.noise_measurements import efficiency_ratio, price_density
 from indicators.momentum_indicators import simple_moving_average
-from trade_managers.signal_trading_manager import signal_trading_manager_long
+from trade_managers._signal_trading_manager import signal_trading_manager_long
+from utils.download_stock_csvs import download_stock_day
 from utils.paths import save_under_results_path
 import json
 import yfinance as yf
@@ -42,6 +43,71 @@ def ma_roc_er_signals(df,
                                                                f'SMA{sma2_period}']) * 100.0
     df[f'SMA{sma1_period}ER'] = efficiency_ratio(df, f'SMA{sma1_period}', sma1_period, inplace=False)
     df[f'SMA{sma2_period}ER'] = efficiency_ratio(df, f'SMA{sma2_period}', sma2_period, inplace=False)
+
+    df['sell_signal'] = np.where((df[f'SMA{sma1_period}ROC{sma1_uptrend_roc_period}'] > sma1_uptrend_roc_th) &
+                                 (df[f'SMA{sma2_period}ROC{sma2_uptrend_roc_period}'] > sma2_uptrend_roc_th) &
+                                 (df[f'SMA{sma1_period}ER'] > sma1_uptrend_er_th) &
+                                 (df[f'SMA{sma2_period}ER'] > sma2_uptrend_er_th), True, False)
+    df['buy_signal'] = np.where((df[f'SMA{sma1_period}ROC{sma1_downtrend_roc_period}'] < sma1_downtrend_roc_th) &
+                                (df[f'SMA{sma1_period}ER'] > sma1_downtrend_er_th), True, False)
+
+    return df
+
+
+def ma_roc_er_signals_v6(df,
+                         sma1_period=5,
+                         sma2_period=20,
+                         sma1_uptrend_roc_period=5,
+                         sma2_uptrend_roc_period=5,
+                         sma1_uptrend_roc_th=3.0,
+                         sma2_uptrend_roc_th=2.0,
+                         sma1_uptrend_er_th=0.5,
+                         sma2_uptrend_er_th=0.5,
+                         sma1_downtrend_roc_period=5,
+                         sma1_downtrend_roc_th=-3.0,
+                         sma1_downtrend_er_th=0.2):
+
+    df['Date'] = pd.to_datetime(df['Date']).dt.strftime('%Y-%m-%d')
+
+    df = simple_moving_average(df, sma1_period)
+    df = simple_moving_average(df, sma2_period)
+    df[f'SMA{sma1_period}ROC{sma1_uptrend_roc_period}'] = ((df[f'SMA{sma1_period}'] - df.shift(sma1_uptrend_roc_period)[
+        f'SMA{sma1_period}']) /
+                                                           df.shift(sma1_uptrend_roc_period)[
+                                                               f'SMA{sma1_period}']) * 100.0
+    df[f'SMA{sma1_period}ROC{sma1_downtrend_roc_period}'] = ((df[f'SMA{sma1_period}'] -
+                                                              df.shift(sma1_downtrend_roc_period)[
+                                                                  f'SMA{sma1_period}']) /
+                                                             df.shift(sma1_downtrend_roc_period)[
+                                                                 f'SMA{sma1_period}']) * 100.0
+    df[f'SMA{sma2_period}ROC{sma2_uptrend_roc_period}'] = ((df[f'SMA{sma2_period}'] - df.shift(sma2_uptrend_roc_period)[
+        f'SMA{sma2_period}']) /
+                                                           df.shift(sma2_uptrend_roc_period)[
+                                                               f'SMA{sma2_period}']) * 100.0
+    df[f'SMA{sma1_period}ER'] = efficiency_ratio(df, f'SMA{sma1_period}', sma1_period, inplace=False)
+    df[f'SMA{sma2_period}ER'] = efficiency_ratio(df, f'SMA{sma2_period}', sma2_period, inplace=False)
+
+    df['Datetime'] = pd.to_datetime(df['Date'])
+    df['max200'] = df['High'].rolling(200).max()
+    df['min200'] = df['Low'].rolling(200).min()
+    df['avg_high'] = df['High'].rolling(20).mean()
+    df['avg_low'] = df['Low'].rolling(20).mean()
+    df['bear'] = np.where(df['avg_high'] < df['max200'] * 0.8, True, False)
+    df['bull'] = np.where(df['avg_low'] > df['min200'] * 1.2, True, False)
+
+    spy_df = yf.Ticker('SPY').history(period='max', interval='1d').reset_index()
+    spy_df['Datetime'] = pd.to_datetime(spy_df['Date'])
+    df_first_datetime = df.iloc[0]['Datetime']
+    df_last_datetime = df.iloc[-1]['Datetime']
+    spy_df = spy_df.loc[(spy_df['Datetime'] >= df_first_datetime) & (spy_df['Datetime'] <= df_last_datetime)].copy()
+    spy_df['max200'] = spy_df['High'].rolling(200).max()
+    spy_df['min200'] = spy_df['Low'].rolling(200).min()
+    spy_df['avg_high'] = spy_df['High'].rolling(20).mean()
+    spy_df['avg_low'] = spy_df['Low'].rolling(20).mean()
+    # spy_df['bear'] = np.where(spy_df['avg_high'] < spy_df['max200'] * 0.8, True, False)
+    # spy_df['bull'] = np.where(spy_df['avg_low'] > spy_df['min200'] * 1.2, True, False)
+    df['spy_bear'] = np.where(spy_df['avg_high'] < spy_df['max200'] * 0.8, True, False)
+    df['spy_bull'] = np.where(spy_df['avg_low'] > spy_df['min200'] * 1.2, True, False)
 
     df['sell_signal'] = np.where((df[f'SMA{sma1_period}ROC{sma1_uptrend_roc_period}'] > sma1_uptrend_roc_th) &
                                  (df[f'SMA{sma2_period}ROC{sma2_uptrend_roc_period}'] > sma2_uptrend_roc_th) &
@@ -538,6 +604,145 @@ def ma_roc_er_trading_v4(ticker,
     return trades, cap
 
 
+def ma_roc_er_trading_v5(ticker,
+                         sma1_period=5,
+                         sma2_period=20,
+                         sma1_uptrend_roc_period=5,
+                         sma2_uptrend_roc_period=5,
+                         sma1_uptrend_roc_th=3.0,
+                         sma2_uptrend_roc_th=2.0,
+                         sma1_uptrend_er_th=0.5,
+                         sma2_uptrend_er_th=0.5,
+                         sma1_downtrend_roc_period=5,
+                         sma1_downtrend_roc_th=-3.0,
+                         sma1_downtrend_er_th=0.2):
+    df = pd.read_csv(download_stock_day(ticker))
+    df = ma_roc_er_signals_v4(df,
+                              sma1_period=sma1_period,
+                              sma2_period=sma2_period,
+                              sma1_uptrend_roc_period=sma1_uptrend_roc_period,
+                              sma2_uptrend_roc_period=sma2_uptrend_roc_period,
+                              sma1_uptrend_roc_th=sma1_uptrend_roc_th,
+                              sma2_uptrend_roc_th=sma2_uptrend_roc_th,
+                              sma1_uptrend_er_th=sma1_uptrend_er_th,
+                              sma2_uptrend_er_th=sma2_uptrend_er_th,
+                              sma1_downtrend_roc_period=sma1_downtrend_roc_period,
+                              sma1_downtrend_roc_th=sma1_downtrend_roc_th,
+                              sma1_downtrend_er_th=sma1_downtrend_er_th)
+
+    """
+    The 4 conditions for a trade: market condition, area of value, entry trigger & trade management
+
+    For market condition I will add SPY regression analysis of 3 periods: 20, 50 and 200.
+    For area of value I will add the volume profile, taking the 5 mean prices with the most volume 200 periods back.
+    For each of these prices I will calculate the percentage from the current close price.
+    For entry trigger I would use reverse patterns, but more work needed in detecting those so I will leave it for
+    later.
+
+    """
+    spy_df = yf.Ticker('SPY').history(period='max', interval='1d').reset_index()
+    spy_df['Datetime'] = pd.to_datetime(spy_df['Date'])
+    spy_df['max200'] = spy_df['High'].rolling(200).max()
+    spy_df['min200'] = spy_df['Low'].rolling(200).min()
+    spy_df['avg_high'] = spy_df['High'].rolling(20).mean()
+    spy_df['avg_low'] = spy_df['Low'].rolling(20).mean()
+    spy_df['bear'] = np.where(spy_df['avg_high'] < spy_df['max200']*0.8, True, False)
+    spy_df['bull'] = np.where(spy_df['avg_low'] > spy_df['min200']*1.2, True, False)
+
+    stock = yf.Ticker(ticker)
+    stock_info = stock.info
+    shares_outstanding = None
+    if "marketCap" in stock_info.keys():
+        today_market_cap = stock_info["marketCap"]
+        shares_outstanding = int(np.floor(stock.history(period='max', interval='1d').iloc[-1]['Close'] / today_market_cap))
+
+    df['Datetime'] = pd.to_datetime(df['Date'])
+    df['max200'] = df['High'].rolling(200).max()
+    df['min200'] = df['Low'].rolling(200).min()
+    df['avg_high'] = df['High'].rolling(20).mean()
+    df['avg_low'] = df['Low'].rolling(20).mean()
+    df['bear'] = np.where(df['avg_high'] < df['max200']*0.8, True, False)
+    df['bull'] = np.where(df['avg_low'] > df['min200']*1.2, True, False)
+
+    stochastic_period = 14
+    stochastic_fast = 5
+    stochastic_slow = 20
+    high = df['High'].rolling(stochastic_period).max()
+    low = df['Low'].rolling(stochastic_period).min()
+    df['%K'] = ((df['Close'] - low) / (high - low)) * 100.0
+    df['%DF'] = df['%K'].rolling(stochastic_fast).mean()
+    df['%DS'] = df['%K'].rolling(stochastic_slow).mean()
+    df['%DF>%DS'] = df['%DF'] > df['%DS']
+
+    i = 0
+    long_position = False
+    cap = 100.0
+
+    trades = []
+
+    while i < len(df):
+        if long_position:
+            if df.iloc[i]['sell_signal']:
+                exit_price = df.shift(-1).iloc[i]['Open']
+                # if np.isnan(exit_price):
+                #     break
+                exit_date = df.shift(-1).iloc[i]['Date']
+                if np.isnan(exit_price):
+                    long_position = False
+                    continue
+                cap = cap * (1.0 + ((exit_price - enter_price) / enter_price))
+                period_df = pd.DataFrame.copy(df.loc[(df['Datetime'] >= datetime.strptime(enter_date, '%Y-%m-%d')) &
+                                                     (df['Datetime'] <= datetime.strptime(exit_date, '%Y-%m-%d'))])
+                period_df.reset_index(inplace=True)
+                period_max = period_df['High'].max()
+                max_date = period_df.iloc[period_df['High'].idxmax()]['Datetime'].strftime('%Y-%m-%d')
+                period_min = period_df['Low'].min()
+                min_date = period_df.iloc[period_df['Low'].idxmin()]['Datetime'].strftime('%Y-%m-%d')
+                trade_dict = {'symbol': ticker,
+                              'type': 'long',
+                              'enter_date': enter_date,
+                              'enter_price': enter_price,
+                              'exit_date': exit_date,
+                              'exit_price': exit_price,
+                              'win': exit_price > enter_price,
+                              'change%': ((exit_price - enter_price) / enter_price) * 100,
+                              'period_max': period_max,
+                              'period_max_date': max_date,
+                              'period_min': period_min,
+                              'period_min_date': min_date,
+                              'stochastic_df': stochastic_df,
+                              'stochastic_ds': stochastic_ds,
+                              'df>ds': stochastic_inequality,
+                              'stock_bull': stock_bull,
+                              'stock_bear': stock_bear,
+                              'market_bull': market_bull,
+                              'market_bear': market_bear}
+                print(trade_dict)
+                trades.append(trade_dict)
+                long_position = False
+        elif df.iloc[i]['buy_signal'] and df.shift(-1).iloc[i]['Open'] > 1.0:
+            enter_price = df.shift(-1).iloc[i]['Open']
+            enter_date = df.shift(-1).iloc[i]['Date']
+            stock_bull = df.iloc[i]['bull']
+            stock_bear = df.iloc[i]['bear']
+            signal_datetime = df.iloc[i]['Datetime']
+            signal_spy_df = spy_df.loc[spy_df['Datetime'] == signal_datetime].copy()
+            stochastic_df = df.iloc[i]['%DF']
+            stochastic_ds = df.iloc[i]['%DS']
+            stochastic_inequality = df.iloc[i]['%DF>%DS']
+            if not signal_spy_df.empty:
+                market_bull = signal_spy_df.iloc[0]['bull']
+                market_bear = signal_spy_df.iloc[0]['bear']
+            else:
+                market_bull = None
+                market_bear = None
+            long_position = True
+        i += 1
+
+    print(ticker, cap)
+    return trades, cap
+
+
 def ma_roc_er_charting(ticker,
                        df,
                        sma1_period=5,
@@ -690,7 +895,6 @@ def ma_roc_er_charting(ticker,
 
 
 def ma_roc_er_trading(ticker,
-                                 df,
                                  sma1_period=5,
                                  sma2_period=20,
                                  sma1_uptrend_roc_period=5,
@@ -702,6 +906,8 @@ def ma_roc_er_trading(ticker,
                                  sma1_downtrend_roc_period=5,
                                  sma1_downtrend_roc_th=-3.0,
                                  sma1_downtrend_er_th=0.2):
+
+    df = pd.read_csv(download_stock_day(ticker))
 
     df = ma_roc_er_signals(df,
                            sma1_period=sma1_period,
@@ -716,7 +922,53 @@ def ma_roc_er_trading(ticker,
                            sma1_downtrend_roc_th=sma1_downtrend_roc_th,
                            sma1_downtrend_er_th=sma1_downtrend_er_th)
 
-    return signal_trading_manager_long(ticker, df)
+    df['Datetime'] = pd.to_datetime(df['Date'])
+
+    i = 0
+    long_position = False
+    cap = 100.0
+
+    trades = []
+
+    while i < len(df):
+        if long_position:
+            if df.iloc[i]['sell_signal'] or df.iloc[i]['Low'] < enter_price*0.75:
+                exit_price = df.shift(-1).iloc[i]['Open']
+                exit_date = df.shift(-1).iloc[i]['Date']
+                if np.isnan(exit_price):
+                    long_position = False
+                    continue
+                cap = cap * (1.0 + ((exit_price - enter_price) / enter_price))
+                period_df = pd.DataFrame.copy(df.loc[(df['Datetime'] >= datetime.strptime(enter_date, '%Y-%m-%d')) &
+                                                     (df['Datetime'] <= datetime.strptime(exit_date, '%Y-%m-%d'))])
+                period_df.reset_index(inplace=True)
+                period_max = period_df['High'].max()
+                max_date = period_df.iloc[period_df['High'].idxmax()]['Datetime'].strftime('%Y-%m-%d')
+                period_min = period_df['Low'].min()
+                min_date = period_df.iloc[period_df['Low'].idxmin()]['Datetime'].strftime('%Y-%m-%d')
+                trade_dict = {'symbol': ticker,
+                              'type': 'long',
+                              'enter_date': enter_date,
+                              'enter_price': enter_price,
+                              'exit_date': exit_date,
+                              'exit_price': exit_price,
+                              'win': exit_price > enter_price,
+                              'change%': ((exit_price - enter_price) / enter_price) * 100,
+                              'period_max': period_max,
+                              'period_max_date': max_date,
+                              'period_min': period_min,
+                              'period_min_date': min_date}
+                print(trade_dict)
+                trades.append(trade_dict)
+                long_position = False
+        elif df.iloc[i]['buy_signal'] and df.shift(-1).iloc[i]['Open'] > 1.0:
+            enter_price = df.shift(-1).iloc[i]['Open']
+            enter_date = df.shift(-1).iloc[i]['Date']
+            long_position = True
+        i += 1
+
+    print(ticker, cap)
+    return trades, cap
 
 
 def ma_roc_er_trading_strategy_test(tickers,
@@ -887,14 +1139,16 @@ def count_strategy_signals_for_each_month(tickers,
 
 
 if __name__ == "__main__":
-    from utils.get_all_stocks import in_sample_tickers
+    from utils.get_all_stocks import in_sample_tickers, large_cap_stocks
     from utils.download_stock_csvs import download_stock_day
     from utils.paths import save_under_results_path
     import pandas as pd
     from strategy_statistics.strategy_statistics import all_statistics_dict
     import itertools
+    import yfinance as yf
     import json
     import concurrent.futures
+    from datetime import datetime
 
     def days_available(ticker):
         """
@@ -922,65 +1176,25 @@ if __name__ == "__main__":
         return df
 
 
-    def run_trading_func(args_tuple):
+    # tickers = in_sample_tickers()
+    # all_trades = []
+    #
+    # with concurrent.futures.ProcessPoolExecutor() as executor:
+    #     results = executor.map(ma_roc_er_trading_v5, tickers)
+    #
+    #     for result in results:
+    #         all_trades = all_trades + result[0]
+    #
+    # pd.DataFrame(all_trades).to_csv(save_under_results_path('ma_roc_er_trading_v5_2_pct_all_trades.csv'))
 
-        sma1_uptrend_roc_period = args_tuple[0]
-        sma2_uptrend_roc_period = args_tuple[1]
-        sma1_uptrend_roc_th = args_tuple[2]
-        sma2_uptrend_roc_th = args_tuple[3]
-        sma1_uptrend_er_th = args_tuple[4]
-        sma2_uptrend_er_th = args_tuple[5]
-        sma1_downtrend_roc_period = args_tuple[6]
-        sma1_downtrend_roc_th = args_tuple[7]
-        sma1_downtrend_er_th = args_tuple[8]
-
-        tickers = in_sample_tickers()
-
-        all_trades = []
-
-        for ticker in tickers:
-            df = days_available(ticker)
-            df['Date'] = df['index']
-            trades, final_cap = ma_roc_er_trading_v3(ticker,
-                                                     df,
-                                                     sma1_uptrend_roc_period=sma1_uptrend_roc_period,
-                                                     sma2_uptrend_roc_period=sma2_uptrend_roc_period,
-                                                     sma1_uptrend_roc_th=sma1_uptrend_roc_th,
-                                                     sma2_uptrend_roc_th=sma2_uptrend_roc_th,
-                                                     sma1_uptrend_er_th=sma1_uptrend_er_th,
-                                                     sma2_uptrend_er_th=sma2_uptrend_er_th,
-                                                     sma1_downtrend_roc_period=sma1_downtrend_roc_period,
-                                                     sma1_downtrend_roc_th=sma1_downtrend_roc_th,
-                                                     sma1_downtrend_er_th=sma1_downtrend_er_th)
-            all_trades = all_trades + trades
-            args_str = [str(x) for x in args_tuple]
-            pd.DataFrame(all_trades).to_csv(save_under_results_path(
-                f'ma_roc_er_trading_v3_in_sample_tickers_1h_timeframe_{"_".join(list(args_str))}.csv'))
-
-        trades_csv = save_under_results_path(
-            f'ma_roc_er_trading_v3_in_sample_tickers_1h_timeframe_{"_".join(list(args_str))}.csv')
-
-        trades_df = pd.read_csv(trades_csv)
-
-        if not trades_df.empty:
-            with open(save_under_results_path(
-                    f'ma_roc_er_trading_v3_in_sample_tickers_1h_timeframe_{"_".join(list(args_str))}_statistics.json'),
-                      'w') as f:
-                json.dump(all_statistics_dict(trades_df), f, indent=4)
-
-        return f'Done for {args_str}'
-
-    tickers = in_sample_tickers()
-
-    all_trades = []
+    tickers = large_cap_stocks()
 
     for ticker in tickers:
-        try:
-            df = pd.read_csv(download_stock_day(ticker))
-        except ValueError:
+        df = yf.Ticker(ticker).history(period='max', interval='1d').reset_index()[-252:]
+        if df.empty:
             continue
-        print(ticker)
-        trades, final_cap = ma_roc_er_trading_v4(ticker, df)
-        all_trades = all_trades + trades
-        pd.DataFrame(all_trades).to_csv(save_under_results_path(
-                f'ma_roc_er_trading_v4_in_sample_tickers_day_timeframe.csv'))
+        df = ma_roc_er_signals_v6(df)
+        if df.iloc[-1]['buy_signal']:
+            price = df.iloc[-1]['Close']
+            date = df.iloc[-1]['Date']
+            print(ticker, price, date)

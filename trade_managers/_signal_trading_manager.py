@@ -3,7 +3,7 @@ import pandas as pd
 from datetime import datetime
 
 
-def signal_trading_manager_long(ticker, df):
+def signal_trading_manager_long(ticker, df, print_trades=True):
     df['Datetime'] = pd.to_datetime(df['Date'])
     i = 0
     long_position = False
@@ -43,7 +43,8 @@ def signal_trading_manager_long(ticker, df):
                               'period_max_date': max_date,
                               'period_min': period_min,
                               'period_min_date': min_date}
-                print(trade_dict)
+                if print_trades:
+                    print(trade_dict)
                 trades.append(trade_dict)
                 long_position = False
         elif df.iloc[i]['buy_signal'] and df.shift(-1).iloc[i]['Open'] != 0.0:
@@ -53,7 +54,8 @@ def signal_trading_manager_long(ticker, df):
 
         i += 1
 
-    print(ticker, cap)
+    if print_trades:
+        print(ticker, cap)
     return trades, cap
 
 

@@ -285,19 +285,30 @@ def volume_profile(df, idx, period, percentile=5):
     return volume_profile_dict_sorted
 
 
+def volume_profile_pct(df, idx, period, percentile=5):
+
+    volume_dict = volume_profile(df, idx, period, percentile)
+    current_close = df.iloc[idx]['Close']
+    volume_list_sorted_by_closeness_to_price = []
+    for key in volume_dict.keys():
+        mean_price = volume_dict[key][0]
+        pct = (mean_price/current_close - 1)*100
+        pct_abs = abs(pct)
+        volume_list_sorted_by_closeness_to_price.append((pct_abs, pct, mean_price))
+    volume_list_sorted_by_closeness_to_price.sort(key=lambda tup: tup[0])
+    final_volume_list = [x[1] for x in volume_list_sorted_by_closeness_to_price]
+    if len(final_volume_list) > 3:
+        return idx, final_volume_list[:3]
+    return idx, final_volume_list
+
 
 if __name__=="__main__":
     from utils.get_all_stocks import get_all_nasdaq_100_stocks, get_all_nyse_composite_stocks, in_sample_tickers
     from utils.download_stock_csvs import download_stock_day
     from utils.paths import save_under_results_path
-    from indicators.momentum_indicators import rate_of_change, williams_r, rsi, simple_moving_average
-    from indicators.trend_indicators import exponential_moving_average
     from machine_learning_stuff.linear_regression import rolling_ols
-    from plotting.candlestick_chart import candlestick_chart_fig, add_line_to_candlestick_chart
-    import plotly.graph_objects as go
-    from plotly.subplots import make_subplots
     from plotting.candlestick_chart import multiple_windows_chart, add_markers_to_candlestick_chart
-    from trade_managers._ma_roc_er_trading import ma_roc_er_signals
+    from trade_managers._signal_trading_manager import signal_trading_manager_long, signal_trading_manager_short
     import pandas as pd
     import numpy as np
     import yfinance as yf
@@ -305,165 +316,94 @@ if __name__=="__main__":
     import random
     import time
     from datetime import datetime
+    import concurrent.futures
+    from itertools import repeat
 
-    start = time.time()
+    # start = time.time()
+    #
+    # tickers = in_sample_tickers()
+    # ticker = 'SPY'
+    # # all_trades = []
+    # # for ticker in tickers:
 
-    tickers = in_sample_tickers()
-    ticker = random.choice(tickers)
+    #
+    # # Adding the dataframe the percentage from the volume, sorted by distance from closing price
+    # period = 200
+    #
+    # idxs = list(range(period, len(df)))
+    # start_idx = df.index[0]
+    # df['volume0_pct'] = np.nan
+    # df['volume1_pct'] = np.nan
+    # df['volume2_pct'] = np.nan
+    #
+    # with concurrent.futures.ProcessPoolExecutor() as executor:
+    #     results = executor.map(volume_profile_pct,
+    #                            repeat(df),
+    #                            idxs,
+    #                            repeat(period))
+    #
+    #     for result in results:
+    #         idx = result[0]
+    #         volumes = result[1]
+    #         df.loc[start_idx + idx, 'volume0_pct'] = volumes[0]
+    #         df.loc[start_idx + idx, 'volume1_pct'] = volumes[1]
+    #         df.loc[start_idx + idx, 'volume2_pct'] = volumes[2]
+    #
+    # df.to_csv(save_under_results_path(f'{ticker}_volumes.csv'))
+
+    # df = pd.read_csv(r"C:\Users\Avishay Wasse\PycharmProjects\stock_market_analysis\results\SPY_volumes.csv")
+    ticker = 'VTI'
+    # df['avg_volume_pct'] = (df['volume0_pct'] + df['volume1_pct'] + df['volume2_pct'])/3
+    # df['sma_volume_fast'] = df['avg_volume_pct'].rolling(10).mean()
+    # df['sma_volume_slow'] = df['avg_volume_pct'].rolling(30).mean()
+
     df = pd.read_csv(download_stock_day(ticker)).reset_index()
-    backup_df = df.copy()
-    df['datetime'] = pd.to_datetime(df['Date'])
-    df = ma_roc_er_signals(df)
-    df['buy_markers'] = np.where(df['buy_signal'], df['Low']*0.999, np.nan)
-    df['sell_markers'] = np.where(df['sell_signal'], df['High']*1.001, np.nan)
-    buy_df = df.loc[df['buy_signal']].copy()
-    idx = int(np.ceil(len(buy_df)*0.9))
-    print(idx)
-    last_buy_signal_date = df.loc[df['buy_signal']].iloc[idx]['datetime']
-    start_date = datetime(2018, 1, 1, 0, 0, 0)
-    # end_date = datetime(2021, 8, 27, 0, 0, 0)
-    end_date = last_buy_signal_date
-    df = df.loc[(df['datetime'] >= start_date) & (df['datetime'] <= end_date)]
-    period = 200
-    volume_profile = volume_profile(df, len(df), period, percentile=5)
-    volume_columns = []
-    # Sorting the levels according to distance from current price
-    price_levels = []
-    for i, volume in enumerate(volume_profile.keys()):
-        volume_columns.append(f'high_volume_{i}')
-        df[f'high_volume_{i}'] = volume_profile[volume][0]
-        if i == 4:
-            break
+    # stochastic_period = 14
+    # stochastic_fast = 5
+    # stochastic_slow = 20
+    # high = df['High'].rolling(stochastic_period).max()
+    # low = df['Low'].rolling(stochastic_period).min()
+    # df['%K'] = ((df['Close'] - low) / (high - low)) * 100.0
+    # df['%DF'] = df['%K'].rolling(stochastic_fast).mean()
+    # df['%DS'] = df['%K'].rolling(stochastic_slow).mean()
 
-    fig = multiple_windows_chart(ticker, df, {(1, ''): volume_columns})
-    fig = add_markers_to_candlestick_chart(fig, df['Date'], df['buy_markers'], 'BUY', 1)
-    fig = add_markers_to_candlestick_chart(fig, df['Date'], df['sell_markers'], 'SELL', 0)
-    fig.show()
-    fig = candlestick_chart_fig(backup_df, ticker)
-    fig.show()
-    exit()
-
-    stdevs = 2
-    df = range_moving_average(df, period)
-    df = stdev_bands(df, period, stdevs=stdevs)
-    df = prices_skewness(df, period)
-    df = prices_kurtosis(df, period)
-    df[f'Sk-K{period}'] = df[f'Sk{period}'] - df[f'K{period}'] # Can provide information given that values ranged ~ [-1,1]
-    df[f'KE{period}'] = df[f'K{period}'] - 3
-    fig = multiple_windows_chart(ticker,
-                                 df,
-                                 {(1,''): [f'{stdevs}+SMA{period}', f'{stdevs}-SMA{period}', f'RMA{period}'],
-                                  (2, 'Skewness'): [f'Sk{period}'],
-                                  (3, 'Kurtosis'): [f'K{period}'],
-                                  (4, 'Sk - K'): [f'Sk-K{period}']})
-    fig.show()
-
-    # periods = [5, 9, 20, 31, 63, 126, 252]
+    # chart_dict = {(2, 'Volume %'): ['volume0_pct',
+    #                                     'volume1_pct',
+    #                                     'volume2_pct',
+    #                                     'avg_volume_pct',
+    #                                     'sma_volume_fast',
+    #                                     'sma_volume_slow'],
+    #               (3, 'Stochastic'): ['%K', '%DF', '%DS']}
     #
-    # for period in periods:
-    #     df = rate_of_change(df, period)
-    #     df = percental_atr(df, period)
-    #     df = exponential_moving_average(df, 'High', period)
-    #     df[f'EMA{period}High'] = df[f'EMA{period}']
-    #     df = exponential_moving_average(df, 'Low', period)
-    #     df[f'EMA{period}Low'] = df[f'EMA{period}']
-    #     df = exponential_moving_average(df, 'Close', period)
-    #     df = williams_r(df, period)
-    #     df = rsi(df, period)
-    #
-    # df = df[-2016:]
-    #
-    #
-    # # Create subplots and mention plot grid size
-    # fig = make_subplots(rows=5, cols=1, shared_xaxes=True,
-    #                     vertical_spacing=0.03, subplot_titles=(f'{ticker}','Williams R%', 'RSI', '%ATR', 'ROC'),
-    #                     row_width=[0.2, 0.2, 0.2, 0.2, 0.5])
-    #
-    # # Plot OHLC on 1st row
-    # fig.add_trace(go.Candlestick(x=df["Date"], open=df["Open"], high=df["High"],
-    #                              low=df["Low"], close=df["Close"], name="OHLC"),
-    #               row=1, col=1)
-    #
-    # for period in periods:
-    #     fig.add_trace(go.Scatter(x=df['Date'], y=df[f'EMA{period}'],
-    #                              name=f'EMA{period}'),
-    #                   row=1, col=1)
-    #     fig.add_trace(go.Scatter(x=df['Date'], y=df[f'EMA{period}High'],
-    #                              name=f'EMA{period}High'),
-    #                   row=1, col=1)
-    #     fig.add_trace(go.Scatter(x=df['Date'], y=df[f'EMA{period}Low'],
-    #                              name=f'EMA{period}Low'),
-    #                   row=1, col=1)
-    #     fig.add_trace(go.Scatter(x=df['Date'], y=df[f'Williams_R%_{period}'],
-    #                              name=f'Williams_R%_{period}'),
-    #                   row=2, col=1)
-    #     fig.add_trace(go.Scatter(x=df['Date'], y=df[f'RSI{period}'],
-    #                              name=f'RSI{period}'),
-    #                   row=3, col=1)
-    #     fig.add_trace(go.Scatter(x=df['Date'], y=df[f'%ATR{period}'],
-    #                              name=f'%ATR{period}'),
-    #                   row=4, col=1)
-    #     fig.add_trace(go.Scatter(x=df['Date'], y=df[f'ROC{period}'],
-    #                              name=f'ROC{period}'),
-    #                   row=5, col=1)
-    #
-    # fig.update(layout_xaxis_rangeslider_visible=False)
-    # fig.show()
-    #
-    # print(time.time() - start)
-
-    # ticker = 'UPST'
-    # df = pd.read_csv(download_stock_day(ticker))[-1008:]
-    #
-    # period1 = 50
-    # period2 = 200
-    # df = volume_weighted_average(df, 'Close', period1)
-    # df = volume_weighted_average(df, 'High', period1)
-    # df = volume_weighted_average(df, 'Low', period1)
-    # # df = volume_weighted_average(df, 'Close', period2)
-    #
-    # fig = candlestick_chart_fig(df, ticker)
-    # fig = add_line_to_candlestick_chart(fig, df['Date'], df[f'Close_VWA{period1}'], name=f'Close_VWA{period1}')
-    # fig = add_line_to_candlestick_chart(fig, df['Date'], df[f'High_VWA{period1}'], name=f'High_VWA{period1}')
-    # fig = add_line_to_candlestick_chart(fig, df['Date'], df[f'Low_VWA{period1}'], name=f'Low_VWA{period1}')
-    #
+    # fig = multiple_windows_chart(ticker, df, chart_dict)
     # fig.show()
 
-    # roc_period = 5
-    # df = rate_of_change(df, roc_period)
-    #
-    # atr_period = 5
-    # df = percental_atr(df, atr_period)
-    # df['%atr_average'] = df[f'%ATR{atr_period}'].rolling(200).mean()
-    #
-    # df = average_volume_diff(df, 20, 200)
-    # df['vol_diff_avg'] = df['VolDiff'].rolling(5).mean()
-    # # df.to_csv(save_under_results_path(f'{ticker}_avg_vol_diff.csv'))
-    #
-    # # Create subplots and mention plot grid size
-    # fig = make_subplots(rows=4, cols=1, shared_xaxes=True,
-    #                     vertical_spacing=0.03, subplot_titles=(f'{ticker}', 'VolDiff', '%ATR', 'ROC'),
-    #                     row_width=[0.2, 0.2, 0.2, 0.7])
-    #
-    # # Plot OHLC on 1st row
-    # fig.add_trace(go.Candlestick(x=df["Date"], open=df["Open"], high=df["High"],
-    #                              low=df["Low"], close=df["Close"], name="OHLC"),
-    #               row=1, col=1)
-    #
-    # fig.add_trace(go.Scatter(x=df['Date'], y=df['VolDiff'], name='VolDiff'),
-    #               row=2, col=1)
-    #
-    # fig.add_trace(go.Scatter(x=df['Date'], y=df['vol_diff_avg'], name='vol_diff_avg'),
-    #               row=2, col=1)
-    #
-    # fig.add_trace(go.Scatter(x=df['Date'], y=df[f'%ATR{atr_period}'], name=f'%ATR{atr_period}'),
-    #               row=3, col=1)
-    #
-    # fig.add_trace(go.Scatter(x=df['Date'], y=df['%atr_average'], name='%atr_average'),
-    #               row=3, col=1)
-    #
-    # fig.add_trace(go.Scatter(x=df['Date'], y=df[f'ROC{roc_period}'], name=f'ROC{roc_period}'),
-    #               row=4, col=1)
-    #
-    # fig.update(layout_xaxis_rangeslider_visible=False)
-    # fig.show()
+    # Volume signals
+    # df['buy_signal'] = np.where(df['sma_volume_fast'] < df['sma_volume_slow'], True, False)
+    # df['sell_signal'] = np.where((df['sma_volume_fast'] > df['sma_volume_slow']), True, False)
+
+    # Stochastic Signals
+    # df['buy_signal'] = np.where(df['%DS'] < df['%DF'], True, False)
+    # df['sell_signal'] = np.where(df['%DS'] > df['%DF'], True, False)
+
+    # Volume & Stochastic
+    # df['buy_signal'] = np.where((df['sma_volume_fast'] < df['sma_volume_slow']) &
+    #                             (df['%DS'] < df['%DF']), True, False)
+    # df['sell_signal'] = np.where((df['sma_volume_fast'] > df['sma_volume_slow']) &
+    #                              (df['%DS'] > df['%DF']), True, False)
+
+    # SPY Stochastic
+    df['Datetime'] = pd.to_datetime(df['Date'])
+    df['52max'] = df['High'].rolling(252).max()
+    df['52min'] = df['Low'].rolling(252).min()
+    # df['change%'] = (df['Close']/df.shift(1)['Close'] - 1)*100
+    # df['avg_change%'] = df['change%'].rolling(10).mean()
+    df['buy_signal'] = np.where(df['Close'] > df['52min']*1.3, True, False)
+    df['sell_signal'] = np.where(df['Close'] < df['52max']*0.8, True, False)
+    trades, final_cap = signal_trading_manager_long(ticker, df)
+
+    first_trade_price = trades[0]['enter_price']
+    last_trade_price = trades[-1]['exit_price']
+    print('buy & hold:', (last_trade_price/first_trade_price - 1))
+
+    # pd.DataFrame(all_trades).to_csv(save_under_results_path('volume_profile_trading_all_trades.csv'))

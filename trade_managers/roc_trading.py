@@ -1,5 +1,5 @@
 from indicators.momentum_indicators import rate_of_change
-from trade_managers.signal_trading_manager import signal_trading_manager_long
+from trade_managers._signal_trading_manager import signal_trading_manager_long
 import numpy as np
 
 

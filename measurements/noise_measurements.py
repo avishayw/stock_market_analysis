@@ -57,7 +57,7 @@ if __name__ == "__main__":
     from utils.download_stock_csvs import download_stock_day
     from utils.paths import save_under_results_path
     from indicators.momentum_indicators import rate_of_change, simple_moving_average
-    from trade_managers.signal_trading_manager import signal_trading_manager_long, signal_trading_manager_short
+    from trade_managers._signal_trading_manager import signal_trading_manager_long, signal_trading_manager_short
     import pandas as pd
     import numpy as np
     from datetime import datetime

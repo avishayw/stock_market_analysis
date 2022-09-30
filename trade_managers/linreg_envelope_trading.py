@@ -1,4 +1,4 @@
-from trade_managers.signal_trading_manager import signal_trading_manager
+from trade_managers._signal_trading_manager import signal_trading_manager
 from machine_learning_stuff.linear_regression import rolling_ols_envelope
 import numpy as np
 

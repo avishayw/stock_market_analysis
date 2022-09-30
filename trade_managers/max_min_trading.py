@@ -1,4 +1,4 @@
-from trade_managers.signal_trading_manager import signal_trading_manager_long, signal_trading_manager_short
+from trade_managers._signal_trading_manager import signal_trading_manager_long, signal_trading_manager_short
 import numpy as np
 
 

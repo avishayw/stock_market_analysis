@@ -1,4 +1,4 @@
-from trade_managers.signal_trading_manager import signal_trading_manager_long
+from trade_managers._signal_trading_manager import signal_trading_manager_long
 from indicators.volume_indicators import vpt
 from machine_learning_stuff.linear_regression import rolling_ols
 import numpy as np

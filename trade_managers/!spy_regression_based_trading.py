@@ -1,6 +1,6 @@
 from utils.download_stock_csvs import download_stock_day
 from machine_learning_stuff.linear_regression import rolling_backward_linear_regression
-from trade_managers.signal_trading_manager import signal_trading_manager, signal_trading_manager_long, signal_trading_manager_short
+from trade_managers._signal_trading_manager import signal_trading_manager, signal_trading_manager_long, signal_trading_manager_short
 import pandas as pd
 import numpy as np
 

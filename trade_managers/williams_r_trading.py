@@ -1,7 +1,7 @@
 import numpy as np
 from indicators.momentum_indicators import williams_r
 from indicators.my_indicators import williams_r_all
-from trade_managers.signal_trading_manager import signal_trading_manager_long, signal_trading_manager_short
+from trade_managers._signal_trading_manager import signal_trading_manager_long, signal_trading_manager_short
 
 
 def williams_r_trading_long(ticker, df, period=5, overbought=-10.0, oversold=-90.0):

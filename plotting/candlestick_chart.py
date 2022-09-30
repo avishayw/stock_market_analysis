@@ -78,19 +78,59 @@ if __name__ == "__main__":
     import numpy as np
     import peakutils
     from indicators.my_indicators import rolling_baseline
+    from indicators.momentum_indicators import simple_moving_average
+    from indicators.trend_indicators import exponential_moving_average
     from machine_learning_stuff.linear_regression import rolling_backward_linear_regression
 
-    ticker = 'ALGN'
-    df = yf.Ticker(ticker).history(period='max', interval='1d').reset_index()[-4032:]
-    period = 100
-    df = rolling_backward_linear_regression(df, 'Close', period)
-    roc_period = 20
-    df['score_roc'] = df['score'] - df.shift(roc_period)['score']
-    # df['score_roc'] = np.where(df['score_roc'] < df['score_roc'].mean()*np.std(df['score_roc'].tolist())*5, df['score_roc'], np.nan)
+    ticker = 'SPY'
+    spy_df = yf.Ticker(ticker).history(period='max', interval='1d').reset_index()
 
-    chart_dict = {(2, 'Regression Coefficient'): ['coefficient'],
-                  (3, 'Regression Score'): ['score'],
-                  (4, 'Regression Score Rate of Change'): ['score_roc']}
+    # Peaks
+    spy_df['peak'] = np.where(((spy_df.shift(2)['High'] < spy_df.shift(1)['High']) &
+                               (spy_df.shift(1)['High'] < spy_df['High']) &
+                               (spy_df.shift(-1)['High'] < spy_df['High'])) |
+                              ((spy_df.shift(1)['High'] < spy_df['High']) &
+                               (spy_df.shift(-1)['High'] < spy_df['High']) &
+                               (spy_df.shift(-2)['High'] < spy_df.shift(-1)['High'])), True, False)
 
-    fig = multiple_windows_chart(ticker, df, chart_dict)
+    spy_df['peak_markers'] = np.where(spy_df['peak'], spy_df['High']*1.01, np.nan)
+
+    spy_df['last_peak'] = np.nan
+    spy_df['last_peak_date'] = np.nan
+    spy_df['last_peak'] = np.where(spy_df['peak'], spy_df['High'], spy_df.shift(1)['last_peak'])
+    spy_df['last_peak_date'] = np.where(spy_df['peak'], spy_df['Date'], spy_df.shift(1)['last_peak_date'])
+
+    # Toughs
+    spy_df['tough'] = np.where(((spy_df.shift(2)['Low'] > spy_df.shift(1)['Low']) &
+                                (spy_df.shift(1)['Low'] > spy_df['Low']) &
+                                (spy_df.shift(-1)['Low'] > spy_df['Low'])) |
+                               ((spy_df.shift(1)['Low'] > spy_df['Low']) &
+                                (spy_df.shift(-1)['Low'] > spy_df['Low']) &
+                                (spy_df.shift(-2)['Low'] > spy_df.shift(-1)['Low'])), True, False)
+
+    spy_df['tough_markers'] = np.where(spy_df['tough'], spy_df['Low'] * 0.99, np.nan)
+
+    spy_df['last_tough'] = np.nan
+    spy_df['last_tough_date'] = np.nan
+    spy_df['last_tough'] = np.where(spy_df['tough'], spy_df['Low'], spy_df.shift(1)['last_tough'])
+    # spy_df.dropna(inplace=True)
+
+    spy_df['highest_peak'] = spy_df['last_peak'].cummax()
+    spy_df['highest_peak_date'] = spy_df['last_peak_date'].cummax()
+    spy_df['highest_peak'].fillna(method='ffill', inplace=True)
+    spy_df['highest_peak_date'].fillna(method='ffill', inplace=True)
+
+    spy_df['bear_signal'] = np.where(spy_df['High'] < spy_df['highest_peak']*0.8, True, False)
+
+    bear_signals_dates = spy_df.loc[spy_df['bear_signal']]['Date'].tolist()
+
+    fig = candlestick_chart_fig(spy_df, ticker)
+    fig = add_line_to_candlestick_chart(fig, spy_df['Date'], spy_df['highest_peak'], 'highest_peak')
+    fig = add_markers_to_candlestick_chart(fig, spy_df['Date'], spy_df['peak_markers'], 'peak_markers', 1)
+    fig = add_markers_to_candlestick_chart(fig, spy_df['Date'], spy_df['tough_markers'], 'tough_markers', 0)
+
+    # for date in bear_signals_dates:
+    #     fig.add_vline(x=date)
+
     fig.show()
+

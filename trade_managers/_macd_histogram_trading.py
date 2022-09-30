@@ -18,7 +18,7 @@ def macd_histogram_signals(df, fast=12, slow=26, smoothing=9):
 
 
 if __name__=='__main__':
-    from trade_managers.signal_trading_manager import signal_trading_manager_long, signal_trading_manager_short
+    from trade_managers._signal_trading_manager import signal_trading_manager_long, signal_trading_manager_short
     from utils.get_all_stocks import in_sample_tickers
     from utils.download_stock_csvs import download_stock_day
     from utils.paths import save_under_results_path

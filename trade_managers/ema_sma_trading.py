@@ -1,6 +1,6 @@
 from indicators.momentum_indicators import simple_moving_average
 from indicators.trend_indicators import exponential_moving_average
-from trade_managers.signal_trading_manager import signal_trading_manager
+from trade_managers._signal_trading_manager import signal_trading_manager
 import numpy as np
 
 # Bull - SMA50 > SMA200. Enter long: EMA9 < EMA20. Exit long: EMA9 > EMA20

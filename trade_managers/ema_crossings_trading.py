@@ -1,6 +1,6 @@
 from statistical_questions.after_emas_crossed_what_was_the_max_diff import ema_diff
 from indicators.trend_indicators import exponential_moving_average
-from trade_managers.signal_trading_manager import signal_trading_manager_long
+from trade_managers._signal_trading_manager import signal_trading_manager_long
 import statistics
 import numpy as np
 import pandas as pd

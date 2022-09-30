@@ -1,6 +1,6 @@
 from indicators.momentum_indicators import rsi
 import numpy as np
-from trade_managers.signal_trading_manager import signal_trading_manager_long
+from trade_managers._signal_trading_manager import signal_trading_manager_long
 
 
 def rsi_trading(ticker, df, fast=20, slow=126):

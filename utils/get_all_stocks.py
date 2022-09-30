@@ -47,36 +47,37 @@ def out_sample_tickers():
     return tickers
 
 
+def large_cap_stocks():
+    with open(r"C:\Users\Avishay Wasse\PycharmProjects\stock_market_analysis\utils\large_cap_stocks.json", 'r') as f:
+        tickers = json.load(f)['tickers']
+        return tickers
+
+
 if __name__=="__main__":
     from stocksymbol import StockSymbol
     import random
-    import yfinance as yf
+    # import yfinance as yf
     from datetime import datetime
     from dateutil.relativedelta import relativedelta
     import json
+    import concurrent.futures
 
     api_key = '32205225-709a-4d1a-bcb8-c728e175d8c3'
     ss = StockSymbol(api_key)
 
+    large_cap_symbols = []
+
     us_symbols = ss.get_symbol_list(market='us', symbols_only=True)
-    snp_stocks = get_all_snp_stocks()
-    nasdaq_stocks = get_all_nasdaq_100_stocks()
-    all_stocks = list(set(us_symbols + snp_stocks + nasdaq_stocks))
+    market_cap_threshold = 100000000000
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        results = executor.map(return_cap, us_symbols)
 
-    in_sample_stocks = in_sample_tickers()
+        for result in results:
+            if result[1] is not None:
+                print(result[0], f'{round(result[1]/1000000000, 2)}B')
+                if result[1] >= market_cap_threshold:
+                    large_cap_symbols.append(result[0])
 
-    out_sample_stocks = []
-
-    for stock in all_stocks:
-        if stock in in_sample_stocks:
-            continue
-        df = yf.Ticker(stock).history(period='max', interval='1d')
-        if not df.empty:
-            print(stock)
-            out_sample_stocks.append(stock)
-
-    out_sample_stocks_dict = {'tickers': out_sample_stocks}
-
-    with open('out_sample_symbols.json', 'w') as f:
-        json.dump(out_sample_stocks_dict, f, indent=4)
+    with open('large_cap_stocks.json', 'w') as f:
+        json.dump({'tickers': large_cap_symbols}, f, indent=4)
 
