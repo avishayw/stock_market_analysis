@@ -20,6 +20,14 @@ def avg_change(csv_path):
 # print(avg_change(csv_path))
 
 if __name__=="__main__":
-    import glob
+    import pandas as pd
+    from utils.paths import save_under_results_path
+    import os
+
+    trades_csv = r"C:\Users\Avishay Wasse\PycharmProjects\stock_market_analysis\results\ma_roc_er_trading_v5_all_trades.csv"
+
+    name = str(os.path.basename(trades_csv)).replace('.csv', '.parquet')
+    df = pd.read_csv(trades_csv)
+    df.to_parquet(save_under_results_path(name))
 
 

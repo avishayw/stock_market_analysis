@@ -43,6 +43,8 @@ if __name__ == '__main__':
     from itertools import product, repeat
     import pandas as pd
     import numpy as np
+    from strategy_statistics.strategy_statistics import all_statistics_dict
+    import json
 
     tickers = [
         "BKRRF",
@@ -622,6 +624,9 @@ if __name__ == '__main__':
 
     combinations = product(*params_list)
 
+    print(len(list(combinations)))
+    exit()
+
     for combination in combinations:
 
         combination_str = '_'.join([str(x) for x in combination])
@@ -651,4 +656,5 @@ if __name__ == '__main__':
         if len(all_trades) > 0:
             print(f'Sample error: {(1/np.sqrt(len(all_trades)))*100}\n')
 
-        pd.DataFrame(all_trades).to_parquet(f'{combination_str}_all_trades.parquet')
+        with open(f'{combination_str}_statistics.json', 'w') as f:
+            json.dump(all_statistics_dict(pd.DataFrame(all_trades)), f, indent=4)
