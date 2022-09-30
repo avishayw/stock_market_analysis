@@ -622,20 +622,18 @@ if __name__ == '__main__':
 
     combinations = product(*params_list)
 
-    all_trades_dict = {}
-
     for combination in combinations:
 
         combination_str = '_'.join([str(x) for x in combination])
-        all_trades_dict[combination_str] = []
+        all_trades = []
 
         with concurrent.futures.ProcessPoolExecutor() as executor:
             results = executor.map(ma_roc_er_optimization, tickers, repeat(combination))
 
             for result in results:
-                all_trades_dict[combination_str] = all_trades_dict[combination_str] + result
+                all_trades = all_trades + result
 
-        combination_df = pd.DataFrame(all_trades_dict[combination_str])
+        combination_df = pd.DataFrame(all_trades)
         print(f'sma1_period: {combination[0]}\n',
               f'sma2_period: {combination[1]}\n',
               f'sma1_uptrend_roc_period: {combination[2]}\n',
@@ -648,7 +646,6 @@ if __name__ == '__main__':
               f'sma1_downtrend_roc_th: {combination[9]}\n',
               f'sma1_downtrend_er_th: {combination[10]}\n')
         print(f'Win Rate: {len(combination_df.loc[combination_df["win"]])/len(combination_df)}')
-        print(f'Mean Change %: {np.mean(combination_df["change%"].tolist())}')
+        print(f'Mean Change %: {np.mean(combination_df["change%"].tolist())}\n')
 
-    for key in all_trades_dict.keys():
-        pd.DataFrame(all_trades_dict[key]).to_csv(f'{key}_all_trades.csv')
+        combination_df.to_csv(f'{combination_str}_all_trades.csv')
