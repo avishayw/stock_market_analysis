@@ -649,6 +649,6 @@ if __name__ == '__main__':
         print(f'Mean Change %: {np.mean(combination_df["change%"].tolist())}')
         print(f'Total trades: {len(all_trades)}')
         if len(all_trades) > 0:
-            print(f'Sample error: {(1/np.sqrt(len(all_trades)))*100}')
+            print(f'Sample error: {(1/np.sqrt(len(all_trades)))*100}\n')
 
         pd.DataFrame(all_trades).to_parquet(f'{combination_str}_all_trades.parquet')
