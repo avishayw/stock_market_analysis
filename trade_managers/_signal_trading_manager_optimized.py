@@ -62,40 +62,64 @@ def signal_trading_manager_long(ticker, df, print_trades=True):
 if __name__=='__main__':
     from trade_managers._ma_roc_er_trading import ma_roc_er_signals
     from utils.download_stock_csvs import download_stock_day
+    from utils.get_all_stocks import in_sample_tickers
     from _signal_trading_manager import signal_trading_manager_long, signal_trading_manager_long_optimized
     import time
     import pandas as pd
 
-    ticker = 'DMAQ'
+    # tickers = in_sample_tickers()
+    #
+    # for ticker in tickers:
+    #     df = pd.read_csv(download_stock_day(ticker))
+    #     df = ma_roc_er_signals(df)
+    #     copy_df = df.copy()
+    #
+    #     trades1, cap = signal_trading_manager_long(ticker, df, print_trades=False)
+    #
+    #     trades2 = signal_trading_manager_long_optimized(ticker, copy_df)
+    #
+    #     df1 = pd.DataFrame(trades1)
+    #
+    #     if not df1.empty:
+    #         df1.drop(columns=['period_max', 'period_max_date', 'period_min', 'period_min_date'], inplace=True)
+    #
+    #     df2 = pd.DataFrame(trades2)
+    #
+    #     if not (df1.empty or df2.empty):
+    #         df1.drop(columns=['change%'], inplace=True)
+    #         df2.drop(columns=['change%'], inplace=True)
+    #         print(ticker, len(df1), len(df2), df1.equals(df2))
+    #     else:
+    #         print(ticker, len(df1), len(df2))
+
+    ticker = 'BEN'
+
     df = pd.read_csv(download_stock_day(ticker))
     df = ma_roc_er_signals(df)
-
     copy_df = df.copy()
-
-    t0 = time.perf_counter()
 
     trades1, cap = signal_trading_manager_long(ticker, df, print_trades=False)
 
-    p0 = time.perf_counter() - t0
-
-    t1 = time.perf_counter()
-
     trades2 = signal_trading_manager_long_optimized(ticker, copy_df)
 
-    p1 = time.perf_counter() - t1
-    print(p0, p1)
+    df1 = pd.DataFrame(trades1)
 
-    df1 = pd.DataFrame(trades1).drop(columns=['period_max', 'period_max_date', 'period_min', 'period_min_date'])
-    print(len(df1))
+    if not df1.empty:
+        df1.drop(columns=['period_max', 'period_max_date', 'period_min', 'period_min_date'], inplace=True)
 
     df2 = pd.DataFrame(trades2)
-    print(len(df2))
 
     print(df1.head())
     print(df2.head())
     print(df1.tail())
     print(df2.tail())
 
-    df1.drop(columns=['change%'], inplace=True)
-    df2.drop(columns=['change%'], inplace=True)
-    print(df1.equals(df2))
+    if not (df1.empty or df2.empty):
+        df1.drop(columns=['change%'], inplace=True)
+        df2.drop(columns=['change%'], inplace=True)
+        print(ticker, len(df1), len(df2), df1.equals(df2))
+    else:
+        print(ticker, len(df1), len(df2))
+
+
+

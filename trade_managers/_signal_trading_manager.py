@@ -49,7 +49,7 @@ def signal_trading_manager_long(ticker, df, print_trades=True):
                     print(trade_dict)
                 trades.append(trade_dict)
                 long_position = False
-        elif df.iloc[i]['buy_signal']:
+        elif df.iloc[i]['buy_signal'] and df.shift(-1).iloc[i]['Open'] != 0.0:
             enter_price = df.shift(-1).iloc[i]['Open']
             enter_date = df.shift(-1).iloc[i]['Date']
             long_position = True
@@ -63,6 +63,7 @@ def signal_trading_manager_long(ticker, df, print_trades=True):
 
 def signal_trading_manager_long_optimized(ticker, df, print_trades=True):
 
+    df = df.loc[(df['Open'] != 0.0) & (df['Open'] != np.nan)].copy()
     df['symbol'] = ticker
     df['type'] = 'long'
     df['enter_price'] = df.shift(-1)['Open']
@@ -112,6 +113,10 @@ def signal_trading_manager_long_optimized(ticker, df, print_trades=True):
     # df = df.drop([df.index[-1]], axis=0)
     df['change%'] = (df['exit_price'] / df['enter_price'] - 1) * 100.0
     df['win'] = df['exit_price'] > df['enter_price']
+
+    # df.replace([np.inf, -np.inf], np.nan, inplace=True)
+    # df.dropna(subset=["col1", "col2"], how="all", inplace=True)
+
     trades_df = df[['symbol', 'type', 'enter_date', 'enter_price', 'exit_date', 'exit_price', 'win', 'change%']].copy()
 
     trades = trades_df.to_dict('records')
