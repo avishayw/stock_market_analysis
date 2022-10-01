@@ -93,7 +93,7 @@ def signal_trading_manager_long_optimized(ticker, df, print_trades=True):
                 buy = True
         i += 1
 
-    if not idx_list:
+    if len(idx_list) < 2:
         return []
 
     if (len(idx_list) % 2) != 0:
