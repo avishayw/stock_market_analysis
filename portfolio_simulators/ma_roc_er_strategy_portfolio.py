@@ -47,12 +47,20 @@ if __name__=='__main__':
     import pandas as pd
     import numpy as np
     import yfinance as yf
+    from utils.paths import save_under_results_path
+    import os
 
-    trades_csv_path = r"C:\Users\Avishay Wasse\PycharmProjects\stock_market_analysis\results\ma_roc_er_trading_v5_all_trades.csv"
+    trades_csv_path = r"C:\Users\Avishay Wasse\PycharmProjects\stock_market_analysis\results\ma_roc_er_trading_optimized_all_trades.csv"
     df_backup = pd.read_csv(trades_csv_path)
+
+    # Fixing abnormal change value
+    df_backup = df_backup.loc[df_backup['change%'] < 10000]
+
     df_backup.sort_values(by='enter_date', inplace=True)
     spy_df_backup = yf.Ticker('SPY').history(period='max', interval='1d').reset_index()
     spy_df_backup['Datetime'] = pd.to_datetime(spy_df_backup['Date'])
+
+    portfolio_list = []
     year = 1995
     while year < 2023:
         start_datetime = datetime(year, 1, 1, 0, 0, 0)
@@ -78,6 +86,9 @@ if __name__=='__main__':
         current_date = df.iloc[0]['enter_datetime']
         for i in range(len(df)):
             # print(value, cash, round(trade_size_cap_ratio, 3))
+            portfolio_list.append({'Date': df.iloc[i]['enter_date'],
+                                   'Value': value,
+                                   'Cash': cash})
             if trades:
                 if df.iloc[i]['enter_datetime'] > trades[-1][0]:
                     trades_to_pop = 0
@@ -106,7 +117,14 @@ if __name__=='__main__':
 
         # print(value, cash)
         # print(actual_trades, actual_trades/len(df))
+        # print(f'Return: {value/initial_cap}, SPY Return: {spy_return}, Beat SPY: {value/initial_cap > spy_return}')
         print(f'Year: {year}, Return: {value/initial_cap}, SPY Return: {spy_return}, Beat SPY: {value/initial_cap > spy_return}')
         year += 1
+        # name = str(os.path.basename(trades_csv_path)).replace('.csv', '')
+        # portfolio_df = pd.DataFrame(portfolio_list)
+        # max_value = portfolio_df['Value'].cummax()
+        # portfolio_df['Drawdown'] = (portfolio_df['Value']/max_value - 1)*100.0
+        # print(f'Max. Drawdown %: {portfolio_df["Drawdown"].min()}')
+        # portfolio_df.to_csv(save_under_results_path(f'{name}_portfolio_log.csv'))
 
 

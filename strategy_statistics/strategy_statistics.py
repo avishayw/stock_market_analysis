@@ -233,7 +233,7 @@ if __name__=="__main__":
     import os
     import itertools
 
-    trades_csv = r"C:\Users\Avishay Wasse\PycharmProjects\stock_market_analysis\results\ma_roc_er_trading_with_stop_loss_at_25_pct_all_trades.csv"
+    trades_csv = r"C:\Users\Avishay Wasse\PycharmProjects\stock_market_analysis\results\ma_roc_er_trading_optimized_all_trades.csv"
 
     df = pd.read_csv(trades_csv)
     name = str(os.path.basename(trades_csv)).replace('.csv', '')

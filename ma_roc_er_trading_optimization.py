@@ -45,6 +45,10 @@ if __name__ == '__main__':
     import numpy as np
     from strategy_statistics.strategy_statistics import all_statistics_dict
     import json
+    import pathos
+    import glob
+    import os
+
 
     tickers = [
         "BKRRF",
@@ -624,13 +628,26 @@ if __name__ == '__main__':
 
     combinations = product(*params_list)
 
+    done_combinations_jsons = glob.glob('*.json')
+    done_combinations = [str(os.path.basename(x)).replace('_statistics.json', '') for x in done_combinations_jsons]
+
     for combination in combinations:
 
         combination_str = '_'.join([str(x) for x in combination])
+
+        if combination_str in done_combinations:
+            continue
+
         all_trades = []
 
-        with concurrent.futures.ProcessPoolExecutor() as executor:
-            results = executor.map(ma_roc_er_optimization, tickers, repeat(combination))
+        # with concurrent.futures.ProcessPoolExecutor() as executor:
+        #     results = executor.map(ma_roc_er_optimization, tickers, repeat(combination))
+        #
+        #     for result in results:
+        #         all_trades = all_trades + result
+
+        with pathos.pools.ProcessPool() as executor:
+            results = list(executor.map(ma_roc_er_optimization, tickers, repeat(combination)))
 
             for result in results:
                 all_trades = all_trades + result

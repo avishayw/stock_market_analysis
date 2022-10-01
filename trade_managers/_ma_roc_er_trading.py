@@ -924,51 +924,7 @@ def ma_roc_er_trading(ticker,
 
     df['Datetime'] = pd.to_datetime(df['Date'])
 
-    i = 0
-    long_position = False
-    cap = 100.0
-
-    trades = []
-
-    while i < len(df):
-        if long_position:
-            if df.iloc[i]['sell_signal'] or df.iloc[i]['Low'] < enter_price*0.75:
-                exit_price = df.shift(-1).iloc[i]['Open']
-                exit_date = df.shift(-1).iloc[i]['Date']
-                if np.isnan(exit_price):
-                    long_position = False
-                    continue
-                cap = cap * (1.0 + ((exit_price - enter_price) / enter_price))
-                period_df = pd.DataFrame.copy(df.loc[(df['Datetime'] >= datetime.strptime(enter_date, '%Y-%m-%d')) &
-                                                     (df['Datetime'] <= datetime.strptime(exit_date, '%Y-%m-%d'))])
-                period_df.reset_index(inplace=True)
-                period_max = period_df['High'].max()
-                max_date = period_df.iloc[period_df['High'].idxmax()]['Datetime'].strftime('%Y-%m-%d')
-                period_min = period_df['Low'].min()
-                min_date = period_df.iloc[period_df['Low'].idxmin()]['Datetime'].strftime('%Y-%m-%d')
-                trade_dict = {'symbol': ticker,
-                              'type': 'long',
-                              'enter_date': enter_date,
-                              'enter_price': enter_price,
-                              'exit_date': exit_date,
-                              'exit_price': exit_price,
-                              'win': exit_price > enter_price,
-                              'change%': ((exit_price - enter_price) / enter_price) * 100,
-                              'period_max': period_max,
-                              'period_max_date': max_date,
-                              'period_min': period_min,
-                              'period_min_date': min_date}
-                print(trade_dict)
-                trades.append(trade_dict)
-                long_position = False
-        elif df.iloc[i]['buy_signal'] and df.shift(-1).iloc[i]['Open'] > 1.0:
-            enter_price = df.shift(-1).iloc[i]['Open']
-            enter_date = df.shift(-1).iloc[i]['Date']
-            long_position = True
-        i += 1
-
-    print(ticker, cap)
-    return trades, cap
+    return signal_trading_manager_long(ticker, df)
 
 
 def ma_roc_er_trading_strategy_test(tickers,
@@ -1149,6 +1105,7 @@ if __name__ == "__main__":
     import json
     import concurrent.futures
     from datetime import datetime
+    from itertools import repeat
 
     def days_available(ticker):
         """
@@ -1176,25 +1133,37 @@ if __name__ == "__main__":
         return df
 
 
-    # tickers = in_sample_tickers()
-    # all_trades = []
-    #
-    # with concurrent.futures.ProcessPoolExecutor() as executor:
-    #     results = executor.map(ma_roc_er_trading_v5, tickers)
-    #
-    #     for result in results:
-    #         all_trades = all_trades + result[0]
-    #
-    # pd.DataFrame(all_trades).to_csv(save_under_results_path('ma_roc_er_trading_v5_2_pct_all_trades.csv'))
+    tickers = in_sample_tickers()
+    all_trades = []
 
-    tickers = large_cap_stocks()
+    sma1_period = 5
+    sma2_period = 10
+    sma1_uptrend_roc_period = 3
+    sma2_uptrend_roc_period = 3
+    sma1_uptrend_roc_th = 2.0
+    sma2_uptrend_roc_th = 2.0
+    sma1_uptrend_er_th = 0.2
+    sma2_uptrend_er_th = 0.2
+    sma1_downtrend_roc_period = 3
+    sma1_downtrend_roc_th = -5.0
+    sma1_downtrend_er_th = 0.2
 
-    for ticker in tickers:
-        df = yf.Ticker(ticker).history(period='max', interval='1d').reset_index()[-252:]
-        if df.empty:
-            continue
-        df = ma_roc_er_signals_v6(df)
-        if df.iloc[-1]['buy_signal']:
-            price = df.iloc[-1]['Close']
-            date = df.iloc[-1]['Date']
-            print(ticker, price, date)
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        results = executor.map(ma_roc_er_trading,
+                               tickers,
+                               repeat(sma1_period),
+                               repeat(sma2_period),
+                               repeat(sma1_uptrend_roc_period),
+                               repeat(sma2_uptrend_roc_period),
+                               repeat(sma1_uptrend_roc_th),
+                               repeat(sma2_uptrend_roc_th),
+                               repeat(sma1_uptrend_er_th),
+                               repeat(sma2_uptrend_er_th),
+                               repeat(sma1_downtrend_roc_period),
+                               repeat(sma1_downtrend_roc_th),
+                               repeat(sma1_downtrend_er_th))
+
+        for result in results:
+            all_trades = all_trades + result[0]
+
+    pd.DataFrame(all_trades).to_csv(save_under_results_path('ma_roc_er_trading_optimized_all_trades.csv'))
