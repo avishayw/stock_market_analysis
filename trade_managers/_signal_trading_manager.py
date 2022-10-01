@@ -96,7 +96,8 @@ def signal_trading_manager_long_optimized(ticker, df, print_trades=True):
     if (len(idx_list) % 2) != 0:
         idx_list = idx_list[:-1]
 
-    idx_list.append(idx_list[-1] + 1)
+    if (idx_list[-1] + 1) < (len(df) - 1):
+        idx_list.append(idx_list[-1] + 1)
     df = df.iloc[idx_list]
 
     df['sell_signal'] = df.sell_signal.shift(-1)
