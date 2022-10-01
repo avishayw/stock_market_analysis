@@ -93,16 +93,14 @@ def signal_trading_manager_long_optimized(ticker, df, print_trades=True):
                 buy = True
         i += 1
 
+    if not idx_list:
+        return []
+
     if (len(idx_list) % 2) != 0:
         idx_list = idx_list[:-1]
 
-    try:
-        if (idx_list[-1] + 1) < (len(df) - 1):
-            idx_list.append(idx_list[-1] + 1)
-    except IndexError as e:
-        print(e)
-        print(ticker)
-        exit()
+    if (idx_list[-1] + 1) < (len(df) - 1):
+        idx_list.append(idx_list[-1] + 1)
 
     df = df.iloc[idx_list]
 

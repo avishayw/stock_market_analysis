@@ -66,7 +66,7 @@ if __name__=='__main__':
     import time
     import pandas as pd
 
-    ticker = 'BA'
+    ticker = 'DMAQ'
     df = pd.read_csv(download_stock_day(ticker))
     df = ma_roc_er_signals(df)
 
