@@ -1,6 +1,8 @@
 import numpy as np
 import pandas as pd
 from datetime import datetime
+import warnings
+warnings.filterwarnings('ignore')
 
 
 def signal_trading_manager_long(ticker, df, print_trades=True):
@@ -47,7 +49,7 @@ def signal_trading_manager_long(ticker, df, print_trades=True):
                     print(trade_dict)
                 trades.append(trade_dict)
                 long_position = False
-        elif df.iloc[i]['buy_signal'] and df.shift(-1).iloc[i]['Open'] != 0.0:
+        elif df.iloc[i]['buy_signal']:
             enter_price = df.shift(-1).iloc[i]['Open']
             enter_date = df.shift(-1).iloc[i]['Date']
             long_position = True
@@ -57,6 +59,59 @@ def signal_trading_manager_long(ticker, df, print_trades=True):
     if print_trades:
         print(ticker, cap)
     return trades, cap
+
+
+def signal_trading_manager_long_optimized(ticker, df, print_trades=True):
+
+    df['symbol'] = ticker
+    df['type'] = 'long'
+    df['enter_price'] = df.shift(-1)['Open']
+    df['enter_date'] = df.shift(-1)['Date']
+    df['exit_price'] = df.shift(-1)['Open']
+    df['exit_date'] = df.shift(-1)['Date']
+
+    buys = df['buy_signal'].copy()
+    sells = df['sell_signal'].copy()
+
+    idx_list = []
+
+    i = 0
+    buy = True
+    while i < len(df):
+        if buy:
+            if idx_list:
+                if buys[list(reversed(idx_list))[0]:i].any():
+                    idx_list.append(i - 1)
+                    buy = False
+            else:
+                if buys[:i].any():
+                    idx_list.append(i-1)
+                    buy = False
+        else:
+            if sells[list(reversed(idx_list))[0]:i].any():
+                idx_list.append(i - 1)
+                buy = True
+        i += 1
+
+    if (len(idx_list) % 2) != 0:
+        idx_list = idx_list[:-1]
+
+    idx_list.append(idx_list[-1] + 1)
+    df = df.iloc[idx_list]
+
+    df['sell_signal'] = df.sell_signal.shift(-1)
+    df['exit_price'] = df.exit_price.shift(-1)
+    df['exit_date'] = df.exit_date.shift(-1)
+    df = df.loc[df['buy_signal']]
+    # df = df.reset_index().drop(columns=['index'])
+    # df = df.drop([df.index[-1]], axis=0)
+    df['change%'] = (df['exit_price'] / df['enter_price'] - 1) * 100.0
+    df['win'] = df['exit_price'] > df['enter_price']
+    trades_df = df[['symbol', 'type', 'enter_date', 'enter_price', 'exit_date', 'exit_price', 'win', 'change%']].copy()
+
+    trades = trades_df.to_dict('records')
+    # print(trades)
+    return trades
 
 
 def signal_trading_manager_short(ticker, df):

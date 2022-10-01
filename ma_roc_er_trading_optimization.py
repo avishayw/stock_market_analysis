@@ -2,7 +2,7 @@ import yfinance as yf
 from measurements.noise_measurements import efficiency_ratio
 from indicators.momentum_indicators import simple_moving_average
 from trade_managers._ma_roc_er_trading import ma_roc_er_signals
-from trade_managers._signal_trading_manager import signal_trading_manager_long
+from trade_managers._signal_trading_manager import signal_trading_manager_long, signal_trading_manager_long_optimized
 
 
 def ma_roc_er_optimization(ticker, combination):
@@ -34,7 +34,7 @@ def ma_roc_er_optimization(ticker, combination):
                            sma1_downtrend_er_th=sma1_downtrend_er_th
                            )
 
-    trades, final_cap = signal_trading_manager_long(ticker, df, print_trades=False)
+    trades, final_cap = signal_trading_manager_long_optimized(ticker, df, print_trades=False)
     return trades
 
 
