@@ -293,7 +293,7 @@ def channel_mid_trading(ticker, inner_safety_margin_ratio=0.15, outer_safety_mar
 
 
 if __name__ == '__main__':
-    import random
+    import os
     from datetime import datetime
     from utils.in_sample_tickers import *
 
@@ -301,4 +301,13 @@ if __name__ == '__main__':
 
     for ticker in tickers:
         print(f'{datetime.now().strftime("%d-%m-%Y %H:%M:%S")} {ticker}')
-        channel_mid_trading(ticker)
+        trades = channel_mid_trading(ticker)
+        if os.path.exists('channel_midline_trading_all_trades.csv'):
+            trades_df = pd.read_csv('channel_midline_trading_all_trades.csv')
+            trades_df = trades_df.loc[:, ~trades_df.columns.str.contains('^Unnamed')]
+            all_trades = trades_df.to_dict('record')
+            all_trades = all_trades + trades
+            pd.DataFrame(all_trades).to_csv('channel_midline_trading_all_trades.csv')
+        else:
+            pd.DataFrame(trades).to_csv('channel_midline_trading_all_trades.csv')
+
