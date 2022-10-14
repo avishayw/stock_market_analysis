@@ -53,7 +53,7 @@ def enter_reverse_pattern_exit_indicator(ticker, entrance_df, indicator):
 
 
 if __name__ == "__main__":
-    from locators.reverse_pattern_locators_day import doji_long, doji_short, evening_star, dark_cloud_cove
+    from detectors.reverse_pattern_locators_day import doji_long, doji_short, evening_star, dark_cloud_cove
     from indicators.momentum_indicators import awesome_oscillator
     from utils.get_all_stocks import get_all_snp_stocks
     from os.path import dirname, abspath, exists

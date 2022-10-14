@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
-from locators import candle_stick_patterns
-from locators.trends import successive_trends_detector
+from detectors import candle_stick_patterns
+from detectors.trends import successive_trends_detector
 
 
 class CandlestickPatterns():

@@ -1141,12 +1141,14 @@ if __name__ == "__main__":
     sma1_uptrend_roc_period = 3
     sma2_uptrend_roc_period = 3
     sma1_uptrend_roc_th = 2.0
-    sma2_uptrend_roc_th = 2.0
-    sma1_uptrend_er_th = 0.2
-    sma2_uptrend_er_th = 0.2
-    sma1_downtrend_roc_period = 3
+    sma2_uptrend_roc_th = 10.0
+    sma1_uptrend_er_th = 0.5
+    sma2_uptrend_er_th = 0.8
+    sma1_downtrend_roc_period = 15
     sma1_downtrend_roc_th = -5.0
     sma1_downtrend_er_th = 0.2
+
+    combination_str = f'{sma1_period}_{sma2_period}_{sma1_uptrend_roc_period}_{sma2_uptrend_roc_period}_{sma1_uptrend_roc_th}_{sma2_uptrend_roc_th}_{sma1_uptrend_er_th}_{sma2_uptrend_er_th}_{sma1_downtrend_roc_period}_{sma1_downtrend_roc_th}_{sma1_downtrend_er_th}'
 
     with concurrent.futures.ProcessPoolExecutor() as executor:
         results = executor.map(ma_roc_er_trading,
@@ -1166,4 +1168,4 @@ if __name__ == "__main__":
         for result in results:
             all_trades = all_trades + result[0]
 
-    pd.DataFrame(all_trades).to_csv(save_under_results_path('ma_roc_er_trading_optimized_all_trades.csv'))
+    pd.DataFrame(all_trades).to_csv(save_under_results_path(f'ma_roc_er_trading_optimized_{combination_str}_all_trades.csv'))

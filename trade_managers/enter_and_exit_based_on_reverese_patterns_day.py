@@ -57,7 +57,7 @@ def reverse_pattern_enter_and_exit(ticker, entrance_df, exit_dfs):
 
 
 if __name__=="__main__":
-    from locators.reverse_pattern_locators_day import doji_long, doji_short, evening_star, dark_cloud_cove
+    from detectors.reverse_pattern_locators_day import doji_long, doji_short, evening_star, dark_cloud_cove
     from utils.get_all_stocks import get_all_snp_stocks
     from os.path import dirname, abspath, exists
     from pathlib import Path

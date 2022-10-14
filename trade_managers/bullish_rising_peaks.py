@@ -1,7 +1,7 @@
 import pandas as pd
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
-from locators.peaks_and_toughs import is_peak_loose, is_tough_loose, is_peak_definitive, is_tough_definitive
+from detectors.peaks_and_toughs import is_peak_loose, is_tough_loose, is_peak_definitive, is_tough_definitive
 from indicators.momentum_indicators import simple_moving_average, rsi, stochastic, awesome_oscillator
 from utils.download_stock_csvs import download_stock_week
 import pandas as pd

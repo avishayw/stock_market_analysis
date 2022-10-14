@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 from utils.download_stock_csvs import download_stock_day
 from utils.get_all_stocks import get_all_snp_stocks
-from locators.peaks_and_toughs import is_peak_loose, is_tough_loose, is_peak_definitive, is_tough_definitive
+from detectors.peaks_and_toughs import is_peak_loose, is_tough_loose, is_peak_definitive, is_tough_definitive
 import plotly.graph_objects as go
 from utils.paths import save_under_results_path
 

@@ -1,4 +1,4 @@
-from locators.candle_stick_patterns_class import CandlestickPatterns
+from detectors.candle_stick_patterns_class import CandlestickPatterns
 from indicators.momentum_indicators import simple_moving_average
 import numpy as np
 

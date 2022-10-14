@@ -1,4 +1,4 @@
-from locators.reverse_pattern_locators_day import doji_long
+from detectors.reverse_pattern_locators_day import doji_long
 from utils.download_stock_csvs import download_stock_day
 import pandas as pd
 import numpy as np

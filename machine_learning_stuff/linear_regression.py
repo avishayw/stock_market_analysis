@@ -81,7 +81,7 @@ def backward_linear_regression(df, src, idx, period):
     y1 = model.predict([x[1]])[0]
     y0 = model.predict([x[0]])[0]
     roc = ((y1-y0)/y0)*100.0
-    return roc, model.coef_, model.score(x, y), model
+    return roc, model.coef_[0], model.intercept_, model.score(x, y)
 
 
 def rolling_backward_linear_regression(df, src, period):

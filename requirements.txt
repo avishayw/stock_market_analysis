@@ -18,3 +18,4 @@ kaleido
 stocksymbol
 google
 pathos
+google-cloud-storage

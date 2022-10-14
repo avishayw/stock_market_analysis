@@ -1,4 +1,4 @@
-from locators.peaks_and_toughs import is_tough_loose
+from detectors.peaks_and_toughs import is_tough_loose
 from indicators.momentum_indicators import simple_moving_average
 from indicators.trend_indicators import exponential_moving_average
 import pandas as pd

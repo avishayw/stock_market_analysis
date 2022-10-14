@@ -56,7 +56,7 @@ def enter_reverse_pattern_exit_indicator(ticker, entrance_df, indicator, date):
 
 
 if __name__ == "__main__":
-    from locators.reverse_pattern_locators_minute import doji_long, doji_short, evening_star, dark_cloud_cove
+    from detectors.reverse_pattern_locators_minute import doji_long, doji_short, evening_star, dark_cloud_cove
     from indicators.momentum_indicators import awesome_oscillator
     from utils.get_all_stocks import get_all_snp_stocks
     from utils.download_stock_csvs import download_stock_minute_data

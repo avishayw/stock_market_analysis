@@ -437,7 +437,7 @@ if __name__ == "__main__":
     from utils.download_stock_csvs import download_stock_day
     from utils.get_all_stocks import get_all_nasdaq_100_stocks, get_all_snp_stocks, get_all_nyse_composite_stocks
     from utils.paths import save_under_results_path
-    from locators.trends import successive_trends_detector
+    from detectors.trends import successive_trends_detector
     from indicators.trend_indicators import exponential_moving_average, average_directional_movement
     from indicators.momentum_indicators import simple_moving_average, stochastic
     import pandas as pd

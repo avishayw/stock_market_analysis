@@ -34,7 +34,8 @@ def ma_roc_er_optimization(ticker, combination):
                            sma1_downtrend_er_th=sma1_downtrend_er_th
                            )
 
-    trades = signal_trading_manager_long_optimized(ticker, df, print_trades=False)
+    trades \
+        = signal_trading_manager_long_optimized(ticker, df, print_trades=False)
     return trades
 
 

@@ -302,6 +302,26 @@ def volume_profile_pct(df, idx, period, percentile=5):
     return idx, final_volume_list
 
 
+def my_rsi(df, window):
+
+    df['candle_change'] = (df['Close'] / df.shift(1)['Close'] - 1) * 100.0
+    df['positive_candle_change'] = np.where(df['candle_change'] > 0, df['candle_change'], np.nan)
+    df['negative_candle_change'] = np.where(df['candle_change'] < 0, df['candle_change'], np.nan)
+    df[f'myRSI{window}'] = np.nan
+    start_idx = df.index[0]
+    for i in range(window, len(df)):
+        sample_df = df[i - window:i].copy()
+        positive_sample = sample_df.loc[sample_df['candle_change'] > 0]
+        negative_sample = sample_df.loc[sample_df['candle_change'] < 0]
+        bullish = (positive_sample['candle_change'] * positive_sample['Volume']).sum()
+        bearish = (negative_sample['candle_change'].abs() * negative_sample['Volume']).sum()
+        df.loc[start_idx + i, f'myRSI{window}'] = bullish * 100.0 / (bullish + bearish)
+
+    df.drop(columns=['negative_candle_change', 'positive_candle_change', 'candle_change'], inplace=True)
+
+    return df
+
+
 if __name__=="__main__":
     from utils.get_all_stocks import get_all_nasdaq_100_stocks, get_all_nyse_composite_stocks, in_sample_tickers
     from utils.download_stock_csvs import download_stock_day
