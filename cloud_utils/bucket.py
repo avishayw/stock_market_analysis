@@ -1,10 +1,10 @@
 from google.cloud import storage
 from google.oauth2 import service_account
-from google_cloud_config import *
+from cloud_utils.google_cloud_config import *
 from pathlib import Path
 
 
-def upload(file_path, bucket_file_path):
+def upload_to_bucket(file_path, bucket_file_path):
     credentials = service_account.Credentials.from_service_account_info(credentials_dict)
     client = storage.Client(project='avish-analysis', credentials=credentials)
     bucket = client.get_bucket('avish-bucket')
@@ -12,7 +12,7 @@ def upload(file_path, bucket_file_path):
     blob.upload_from_filename(file_path)
 
 
-def download(bucket_file_path, save_to_path):
+def download_from_bucket(bucket_file_path, save_to_path):
     credentials = service_account.Credentials.from_service_account_info(credentials_dict)
     client = storage.Client(project='avish-analysis', credentials=credentials)
     bucket = client.get_bucket('avish-bucket')
@@ -20,7 +20,7 @@ def download(bucket_file_path, save_to_path):
     blob.download_to_filename(save_to_path)
 
 
-def download_dir(bucket_dir_path, save_to_dir_path):
+def download_dir_from_bucket(bucket_dir_path, save_to_dir_path):
     credentials = service_account.Credentials.from_service_account_info(credentials_dict)
     client = storage.Client(project='avish-analysis', credentials=credentials)
     bucket = client.get_bucket('avish-bucket')
@@ -30,8 +30,14 @@ def download_dir(bucket_dir_path, save_to_dir_path):
         blob.download_to_filename(Path(save_to_dir_path, filename))  # Download
 
 
+def file_exist_in_bucket(bucket_file_path):
+    credentials = service_account.Credentials.from_service_account_info(credentials_dict)
+    client = storage.Client(project='avish-analysis', credentials=credentials)
+    bucket = client.get_bucket('avish-bucket')
+    blob = bucket.blob(bucket_file_path)
+    return blob.exists()
+
+
 if __name__ == '__main__':
-    bucket_path = 'ma_roc_er_optimization/'
-    save_dir_path = r"C:\Users\Avishay Wasse\PycharmProjects\stock_market_analysis\results\ma_roc_er_long_optimization"
-    download_dir(bucket_path, save_dir_path)
+    print(file_exist('channel_trading/channel_midline_trading_all_trades.csv'))
 
