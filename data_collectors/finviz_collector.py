@@ -113,14 +113,20 @@ def tickers_finviz_data_list(tickers):
 
 if __name__ == '__main__':
 
+    def now():
+        return datetime.now().astimezone(pytz.timezone('Asia/Jerusalem'))
+
+
+    last_date = ''
     while True:
-        last_date = ''
         today = datetime.now().astimezone(pytz.timezone('Asia/Jerusalem'))
         if today.strftime('%Y-%m-%d') != last_date:
+            print(f'{now()} Started')
             last_date = today.strftime('%Y-%m-%d')
             finviz_file = 'finviz_data.parquet'
             if file_exist_in_bucket(finviz_file):
-                download_from_bucket(finviz_file, '.')
+                download_from_bucket(finviz_file, finviz_file)
+                print(f'{now()} Downloaded finviz file from bucket')
                 df = pd.read_parquet(finviz_file)
                 df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
                 all_dicts = df.to_dict('records')
@@ -129,8 +135,10 @@ if __name__ == '__main__':
                 all_dicts = all_dicts + tickers_finviz_data_list(tickers)
                 pd.DataFrame(all_dicts).to_parquet(finviz_file)
                 upload_to_bucket(finviz_file, finviz_file)
+                print(f'{now()} Uploaded finviz file to bucket')
             else:
                 tickers = NASDAQ_COMMON_STOCKS + AMEX_COMMON_STOCKS + NYSE_COMMON_STOCKS
                 tickers = random.choices(tickers, k=10)
                 pd.DataFrame(tickers_finviz_data_list(tickers)).to_parquet(finviz_file)
                 upload_to_bucket(finviz_file, finviz_file)
+                print(f'{now()} Uploaded finviz file to bucket')
