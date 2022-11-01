@@ -38,6 +38,24 @@ def file_exist_in_bucket(bucket_file_path):
     return blob.exists()
 
 
+def list_files_in_dir(bucket_dir_path, max_depth=None):
+    credentials = service_account.Credentials.from_service_account_info(credentials_dict)
+    client = storage.Client(project='avish-analysis', credentials=credentials)
+    bucket = client.get_bucket('avish-bucket')
+    blobs = bucket.list_blobs(prefix=bucket_dir_path)  # Get list of files
+    files = []
+    if max_depth is None:
+        for blob in blobs:
+            filename = blob.name.replace('/', '_')
+            files.append(filename)
+    else:
+        for blob in blobs:
+            filename = '_'.join(blob.name.split('/')[1:1+max_depth])
+            files.append(filename)
+        files = list(set(files))
+    return files
+
+
 if __name__ == '__main__':
-    print(file_exist('channel_trading/channel_midline_trading_all_trades.csv'))
+    print(list_files_in_dir('minute_stocks', max_depth=1))
 

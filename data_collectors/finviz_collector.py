@@ -133,7 +133,15 @@ if __name__ == '__main__':
                 tickers = NASDAQ_COMMON_STOCKS + AMEX_COMMON_STOCKS + NYSE_COMMON_STOCKS
                 tickers = random.choices(tickers, k=10)
                 all_dicts = all_dicts + tickers_finviz_data_list(tickers)
-                pd.DataFrame(all_dicts).to_parquet(finviz_file)
+                df = pd.DataFrame(all_dicts)
+                all_dicts_no_duplicates = []
+                symbols = df['symbol'].unique().tolist()
+                for symbol in symbols:
+                    symbol_df = df.loc[df.symbol == symbol].copy()
+                    symbol_df.drop_duplicates(subset=['sales', 'cash_sh'], keep='first', inplace=True)
+                    symbol_dicts = symbol_df.to_dict('records')
+                    all_dicts_no_duplicates = all_dicts_no_duplicates + symbol_dicts
+                pd.DataFrame(all_dicts_no_duplicates).to_parquet(finviz_file)
                 upload_to_bucket(finviz_file, finviz_file)
                 print(f'{now()} Uploaded finviz file to bucket')
             else:

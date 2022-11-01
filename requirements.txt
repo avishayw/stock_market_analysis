@@ -21,3 +21,4 @@ google-cloud-storage
 html5lib
 pyfinviz
 pytz
+beautifulsoup4
