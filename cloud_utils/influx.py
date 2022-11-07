@@ -1,7 +1,6 @@
 import influxdb_client, os, time
 from influxdb_client import Point, WriteOptions
 from influxdb_client.client.write_api import SYNCHRONOUS
-from influxdb import InfluxDBClient
 from cloud_utils.influx_config import TOKEN
 from datetime import datetime
 
