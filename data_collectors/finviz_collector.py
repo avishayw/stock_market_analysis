@@ -6,7 +6,7 @@ from utils.stocks_by_exchange import *
 from datetime import datetime
 import urllib
 import random
-from cloud_utils.bucket import download_from_bucket, upload_to_bucket, file_exist_in_bucket
+from cloud_utils.bucket_gcp_utils import download_from_bucket, upload_to_bucket, file_exist_in_bucket
 import os
 import pytz
 
@@ -111,10 +111,25 @@ def tickers_finviz_data_list(tickers):
     return dict_list
 
 
+def convert_to_influx_points(dict_list):
+    points = []
+    for dict_item in dict_list:
+        time = datetime.fromtimestamp(dict_item['time'])
+        symbol = dict_item['symbol']
+        dict_item.pop('time')
+        dict_item.pop('symbol')
+        points.append({'measurement': 'finviz_data',
+                       'tags': {'symbol': symbol},
+                       'fields': dict_item,
+                       'time': time})
+    return points
+
+
 if __name__ == '__main__':
+    from cloud_utils.influx import write_point
 
     def now():
-        return datetime.now().astimezone(pytz.timezone('Asia/Jerusalem'))
+        return datetime.now().astimezone(pytz.timezone('Asia/Jerusalem')).strftime('%Y-%m-%d %H:%M:%S')
 
 
     last_date = ''
@@ -131,14 +146,20 @@ if __name__ == '__main__':
                 df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
                 all_dicts = df.to_dict('records')
                 tickers = NASDAQ_COMMON_STOCKS + AMEX_COMMON_STOCKS + NYSE_COMMON_STOCKS
-                tickers = random.choices(tickers, k=10)
-                all_dicts = all_dicts + tickers_finviz_data_list(tickers)
+                new_dicts = tickers_finviz_data_list(tickers)
+                new_points = convert_to_influx_points(new_dicts)
+                for point in new_points:
+                    print(f'{now()} Writing point to influx {point}')
+                    write_point('test',
+                                point)
+                all_dicts = all_dicts + new_dicts
                 df = pd.DataFrame(all_dicts)
                 all_dicts_no_duplicates = []
                 symbols = df['symbol'].unique().tolist()
                 for symbol in symbols:
                     symbol_df = df.loc[df.symbol == symbol].copy()
-                    symbol_df.drop_duplicates(subset=['sales', 'cash_sh'], keep='first', inplace=True)
+                    duplicates_subset = [x for x in df.columns.tolist() if x not in ['time', 'marketCap', 'price']]
+                    symbol_df.drop_duplicates(subset=duplicates_subset, keep='first', inplace=True)
                     symbol_dicts = symbol_df.to_dict('records')
                     all_dicts_no_duplicates = all_dicts_no_duplicates + symbol_dicts
                 pd.DataFrame(all_dicts_no_duplicates).to_parquet(finviz_file)

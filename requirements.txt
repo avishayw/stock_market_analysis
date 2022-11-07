@@ -3,7 +3,7 @@ plotly
 yfinance
 ta
 matplotlib
-sklearn
+scikit-learn
 seaborn
 numpy
 mplfinance
@@ -22,3 +22,8 @@ html5lib
 pyfinviz
 pytz
 beautifulsoup4
+google-cloud-logging
+cloud-sql-python-connector
+sqlalchemy
+pg8000
+statsmodels

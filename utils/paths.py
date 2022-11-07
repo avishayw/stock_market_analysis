@@ -1,3 +1,4 @@
+import os.path
 from os.path import dirname, abspath, exists, join
 from os import mkdir
 from pathlib import Path, PurePath
@@ -16,6 +17,8 @@ def save_under_project_path(path):
 
 
 def save_under_results_path(path):
+    if not os.path.exists(Path(project_path(), 'results')):
+        os.mkdir(Path(project_path(), 'results'))
     return Path(Path(project_path(), 'results'), path)
 
 

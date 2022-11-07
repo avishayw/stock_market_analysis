@@ -12,7 +12,7 @@ more and more good estimations.
 from utils.stocks_by_exchange import *
 from utils.download_stock_csvs import *
 from plotting.candlestick_chart import multiple_windows_chart, add_markers_to_candlestick_chart, candlestick_chart_fig
-from cloud_utils.bucket import upload
+from cloud_utils.bucket_gcp_utils import upload
 from utils.in_sample_tickers import *
 import random
 import pandas as pd
