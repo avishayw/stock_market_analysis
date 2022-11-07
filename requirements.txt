@@ -28,3 +28,4 @@ sqlalchemy
 pg8000
 statsmodels
 influxdb-client
+investpy

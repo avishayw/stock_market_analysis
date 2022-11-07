@@ -25,9 +25,13 @@ def download_dir_from_bucket(bucket_dir_path, save_to_dir_path):
     client = storage.Client(project='avish-analysis', credentials=credentials)
     bucket = client.get_bucket('avish-bucket')
     blobs = bucket.list_blobs(prefix=bucket_dir_path)  # Get list of files
+    downloaded_files = []
     for blob in blobs:
         filename = blob.name.replace('/', '_')
-        blob.download_to_filename(Path(save_to_dir_path, filename))  # Download
+        download_path = Path(save_to_dir_path, filename)
+        blob.download_to_filename(download_path)  # Download
+        downloaded_files.append(download_path)
+    return downloaded_files
 
 
 def file_exist_in_bucket(bucket_file_path):
@@ -50,7 +54,7 @@ def list_files_in_dir(bucket_dir_path, max_depth=None):
             files.append(filename)
     else:
         for blob in blobs:
-            filename = '_'.join(blob.name.split('/')[1:1+max_depth])
+            filename = '_'.join(blob.name.split('/')[0:1+max_depth])
             files.append(filename)
         files = list(set(files))
     return files
