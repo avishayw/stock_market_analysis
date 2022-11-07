@@ -150,7 +150,7 @@ if __name__ == '__main__':
                 new_points = convert_to_influx_points(new_dicts)
                 for point in new_points:
                     print(f'{now()} Writing point to influx {point}')
-                    write_point('test',
+                    write_point('fundamental',
                                 point)
                 all_dicts = all_dicts + new_dicts
                 df = pd.DataFrame(all_dicts)
