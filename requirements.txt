@@ -27,3 +27,4 @@ cloud-sql-python-connector
 sqlalchemy
 pg8000
 statsmodels
+influxdb-client
