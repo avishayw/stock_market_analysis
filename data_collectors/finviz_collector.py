@@ -149,7 +149,7 @@ if __name__ == '__main__':
                 new_dicts = tickers_finviz_data_list(tickers)
                 new_points = convert_to_influx_points(new_dicts)
                 for point in new_points:
-                    print(f'{now()} Writing point to influx {point}')
+                    print(f'{now()} Writing point to influx {point}\n')
                     write_point('fundamental',
                                 point)
                 all_dicts = all_dicts + new_dicts
