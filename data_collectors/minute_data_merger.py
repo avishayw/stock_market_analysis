@@ -25,7 +25,7 @@ while True:
         print(f'{now()} Loading dataframes...')
         ticker_dataframes = {}
         for file in all_minute_files:
-            ticker = file.split('_')[-2]
+            ticker = str(file).split('_')[-2]
             if ticker not in ticker_dataframes.keys():
                 ticker_dataframes[ticker] = [pd.read_parquet(file).reset_index()]
             else:
