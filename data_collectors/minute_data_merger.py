@@ -1,6 +1,7 @@
 from cloud_utils.bucket_gcp_utils import download_dir_from_bucket, list_files_in_dir, upload_to_bucket, file_exist_in_bucket, download_from_bucket, delete_file_from_bucket
 from utils.paths import project_path, save_under_project_path
 import os
+import shutil
 import pandas as pd
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
@@ -98,8 +99,8 @@ while True:
 
             print(f'{now()} Deleting {ticker_in_order_str} local files...')
             try:
-                os.remove(local_ticker_split_files_dir_path)
-                os.remove(local_merged_file_path)
+                shutil.rmtree(local_ticker_split_files_dir_path)
+                shutil.rmtree(local_merged_file_path)
             except PermissionError as e:
                 print(e)
                 print(f"{now()} Couldn't remove local files. Access is denied.")
