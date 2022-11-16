@@ -110,5 +110,5 @@ while True:
             print(f'{now()} Done for {ticker_in_order_str}.')
 
         run_duration_in_hr = round((time.perf_counter() - t0)/3600, 2)
-        print(f'{now()} Minute Data Merger finished successfully. Took {run_duration_in_hr} to complete. Total split files loaded: {total_split_files}. Total new merged files: {total_new_merged_files}.')
+        print(f'{now()} Minute Data Merger finished successfully. Took {run_duration_in_hr} hours to complete. Total split files loaded: {total_split_files}. Total new merged files: {total_new_merged_files}.')
         print(f'{now()} Sleeping for one week. Next run: {next_date.strftime("%Y-%m-%d %H:%M:%S")}')
