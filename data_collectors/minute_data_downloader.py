@@ -33,15 +33,14 @@ if __name__=="__main__":
     import time
 
     run_now = input('Run now? (y/n) ')
+    last_date_run = ''
     while True:
         today = datetime.now().astimezone(pytz.timezone('Asia/Jerusalem'))
-
-        if today.weekday() is not (0 or 6) and today.hour == 0 or run_now == 'y':
+        if (today.weekday() is not (0 or 6) and today.hour == 0 and today.strftime('%Y-%m-%d') != last_date_run) or run_now == 'y':
+            last_date_run = today.strftime('%Y-%m-%d')
             t0 = time.perf_counter()
             run_now = None
             today_str = today.strftime('%d-%m-%Y')
             download_minute_daily_and_upload_to_bucket(today_str)
             run_duration_in_hr = round((time.perf_counter() - t0) / 3600, 2)
             print(f'{now()} Run duration: {run_duration_in_hr} hours.')
-            print(f'{now()}: Sleeping 24 hours.')
-            time.sleep(86400)
