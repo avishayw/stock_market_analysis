@@ -33,8 +33,8 @@ def measure_er(sample_df, src='Close'):
     return net_change / sum_of_individual_changes
 
 
-ticker = 'BBBY'
-timeframe = 'w'
+ticker = 'APH'
+timeframe = 'd'
 if timeframe == 'd':
     df = pd.read_csv(download_stock_day(ticker)).reset_index()[-252:]
 elif timeframe == 'w':
@@ -50,22 +50,16 @@ df['low_change%'] = (df['Low']/df.shift(1)['Low'] - 1)*100.0
 df['Median'] = (df['High'] + df['Low'])/2
 
 df_start_idx = df.index[0]
+# i = 2
 i = 2
 movement_id = 0
 current_idx = 0
-er_threshold = 0.7
+er_threshold = 0.8
 max_movement_period = 10
-source = 'Close'
+source = 'High'
 while i < len(df):
     sample_df = df[current_idx:i].copy()
     er = measure_er(sample_df, source)
-    # TODO: remove debug
-    # DEBUG START
-    # if movement_id >= 15:
-    date_current = df.loc[df_start_idx + current_idx, 'Date']
-    date_i = df.loc[df_start_idx + i, 'Date']
-    #     pass
-    # DEBUG END
     if er >= er_threshold:
         movement_er = er
         i += 1
@@ -75,6 +69,7 @@ while i < len(df):
             df.loc[df_start_idx + j, 'movement_er'] = movement_er
         current_idx = i - 1
         movement_id += 1
+        # i = current_idx + 2
         i = current_idx + 2
     elif i - current_idx >= max_movement_period:
         current_idx += 1
@@ -87,7 +82,7 @@ print(movement_id)
 movements = df['movement_id'].dropna().unique().tolist()
 for movement in movements:
     movement_df = df.loc[df['movement_id'] == movement].copy()
-    movement_roc = (movement_df.iloc[-1]['Close']/movement_df.iloc[0]['Close'] - 1)*100.0
+    movement_roc = (movement_df.iloc[-1][source]/movement_df.iloc[0][source] - 1)*100.0
     df.loc[movement_df.index[-1], 'movement_roc'] = movement_roc
     y1 = movement_df.iloc[-1][source]
     y0 = movement_df.iloc[0][source]
@@ -101,7 +96,7 @@ for movement in movements:
 
 df.to_csv(save_under_results_path(f'{ticker}_movements_source_{source.lower()}_er_{str(er_threshold).replace(".", "_")}_timeframe_{timeframe}.csv'))
 
-chart_dict = {(1, 'Close Noise Removed'): [f'{source.lower()}_noise_removed', 'Close'],
+chart_dict = {(1, 'Close Noise Removed'): [f'{source.lower()}_noise_removed', source],
               (2, 'Movement ID'): ['movement_id'],
               (3, 'Movement ER'): ['movement_er']}
 fig = multiple_windows_chart(ticker, df, chart_dict)

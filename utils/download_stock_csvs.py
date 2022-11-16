@@ -1,5 +1,4 @@
-import os.path
-
+import os
 from utils.get_stock_history_df import get_stock_daily_max_history_df, get_stock_minute_history_of_day, get_stock_weekly_max_history_df, get_stock_monthly_max_history_df, get_stock_minute_max_history_df
 from utils.get_all_stocks import get_all_snp_stocks
 from os.path import dirname, abspath, exists
@@ -16,6 +15,12 @@ def download_stock_day(ticker):
         if len(stock_df) < 2:
             return None
         stock_df.to_csv(csv_path)
+    else:
+        try:
+            stock_df = get_stock_daily_max_history_df(ticker)
+            stock_df.to_csv(csv_path)
+        except Exception as e:
+            print(e)
     return csv_path
 
 
@@ -29,6 +34,12 @@ def download_stock_week(ticker):
         if len(stock_df) < 2:
             return None
         stock_df.to_csv(csv_path)
+    else:
+        try:
+            stock_df = get_stock_weekly_max_history_df(ticker)
+            stock_df.to_csv(csv_path)
+        except Exception as e:
+            print(e)
     return csv_path
 
 
@@ -42,6 +53,12 @@ def download_stock_month(ticker):
         if len(stock_df) < 2:
             return None
         stock_df.to_csv(csv_path)
+    else:
+        try:
+            stock_df = get_stock_monthly_max_history_df(ticker)
+            stock_df.to_csv(csv_path)
+        except Exception as e:
+            print(e)
     return csv_path
 
 

@@ -69,17 +69,18 @@ def delete_file_from_bucket(bucket_file_path):
 if __name__ == '__main__':
     import time
 
-    print(file_exist_in_bucket('minute_stocks/TGLS/TGLS_01-11-2022.parquet'))
-    exit()
-    durations = []
-    i = 0
-    while i < 3:
-        t0 = time.perf_counter()
-        print(list_files_in_dir('minute_stocks', max_depth=1))
-        duration = time.perf_counter() - t0
-        print(duration)
-        durations.append(duration)
-        i += 1
-
-    print(durations)
+    download_from_bucket('download_daily_minute.py', 'download_daily_minute.py')
+    # print(file_exist_in_bucket('minute_stocks/TGLS/TGLS_01-11-2022.parquet'))
+    # exit()
+    # durations = []
+    # i = 0
+    # while i < 3:
+    #     t0 = time.perf_counter()
+    #     print(list_files_in_dir('minute_stocks', max_depth=1))
+    #     duration = time.perf_counter() - t0
+    #     print(duration)
+    #     durations.append(duration)
+    #     i += 1
+    #
+    # print(durations)
 

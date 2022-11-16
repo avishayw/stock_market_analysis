@@ -5,7 +5,7 @@ import pandas as pd
 
 def get_all_snp_stocks():
     payload = pd.read_html('https://en.wikipedia.org/wiki/List_of_S%26P_500_companies')
-    return payload[0]['Symbol'].tolist()
+    return payload[0]['Ticker symbol'].tolist()
 
 
 def get_all_nasdaq_100_stocks():

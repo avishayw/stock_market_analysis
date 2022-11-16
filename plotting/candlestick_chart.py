@@ -1,13 +1,25 @@
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+import pandas as pd
 
 
-def candlestick_chart_fig(df, ticker):
+def candlestick_chart_fig(df, ticker, remove_empty_dates=True):
     fig = go.Figure(go.Candlestick(x=df['Date'],
                                          open=df['Open'],
                                          high=df['High'],
                                          low=df['Low'],
                                          close=df['Close'], name=ticker, yaxis='y1')).update_layout(xaxis_rangeslider_visible=False)
+    if remove_empty_dates:
+        df['Date'] = df['Date'].map(lambda x: str(x).split(' ')[0])
+        df['Datetime'] = pd.to_datetime(df['Date'])
+        dt_all = pd.date_range(start=df.loc[df.index[0], 'Date'], end=df.loc[df.index[-1], 'Date'], freq='D')
+        dt_all_py = [d.to_pydatetime() for d in dt_all]
+        dt_obs_py = [d.to_pydatetime() for d in df['Datetime']]
+        dt_breaks = [d for d in dt_all_py if d not in dt_obs_py]
+        print(dt_breaks)
+        print(len(dt_all), len(dt_breaks))
+        fig.update_xaxes(rangebreaks=[dict(values=dt_breaks)])
+
     return fig
 
 
@@ -32,7 +44,7 @@ def add_markers_to_candlestick_chart(fig, x, y, name, color):
     return fig
 
 
-def multiple_windows_chart(ticker, df, chart_dict):
+def multiple_windows_chart(ticker, df, chart_dict, remove_empty_dates=True):
     """
     Create multiple window chart
     :param ticker: For naming the chart
@@ -68,6 +80,17 @@ def multiple_windows_chart(ticker, df, chart_dict):
             fig.add_trace(go.Scatter(x=df['Date'], y=df[column], name=column), row=row[0], col=1)
 
     fig.update(layout_xaxis_rangeslider_visible=False)
+
+    if remove_empty_dates:
+        df['Date'] = df['Date'].map(lambda x: str(x).split(' ')[0])
+        df['Datetime'] = pd.to_datetime(df['Date'])
+        dt_all = pd.date_range(start=df.loc[df.index[0], 'Date'], end=df.loc[df.index[-1], 'Date'], freq='D')
+        dt_all_py = [d.to_pydatetime() for d in dt_all]
+        dt_obs_py = [d.to_pydatetime() for d in df['Datetime']]
+        dt_breaks = [d for d in dt_all_py if d not in dt_obs_py]
+        print(dt_breaks)
+        print(len(dt_all), len(dt_breaks))
+        fig.update_xaxes(rangebreaks=[dict(values=dt_breaks)])
 
     return fig
 

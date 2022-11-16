@@ -61,7 +61,7 @@ while True:
             merged_df = pd.concat(ticker_dataframes)
             merged_df.drop_duplicates(subset=['Datetime'], inplace=True)
             merged_df.sort_values(by='Datetime', ascending=True, inplace=True)
-            merged_file_path = save_under_project_path(f'stock_minute_merged_data/{ticker}_minute_data_merged.csv')
+            merged_file_path = save_under_project_path(f'stock_minute_merged_data/{ticker}_minute_data_merged.parquet')
             merged_df.to_parquet(merged_file_path)
             print(f'{now()} Uploading {ticker} merged dataframe to bucket...')
             upload_to_bucket(merged_file_path, f'stock_merged_minute_data/{ticker}.parquet')
