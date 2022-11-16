@@ -32,10 +32,11 @@ if __name__=="__main__":
     from datetime import datetime
     import time
 
+    run_now = input('Run now? (y/n) ')
     while True:
         today = datetime.now().astimezone(pytz.timezone('Asia/Jerusalem'))
 
-        if today.weekday() is not (0 or 7):
+        if today.weekday() is not (0 or 7) and today.hour == 0:
             today_str = today.strftime('%d-%m-%Y')
             download_minute_daily_and_upload_to_bucket(today_str)
             print(f'{now()}: Sleeping 24 hours.')
