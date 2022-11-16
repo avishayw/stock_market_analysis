@@ -69,7 +69,8 @@ def delete_file_from_bucket(bucket_file_path):
 if __name__ == '__main__':
     import time
 
-    download_from_bucket('download_daily_minute.py', 'download_daily_minute.py')
+    print(file_exist_in_bucket('channel_trading'))
+    # download_from_bucket('minute_data_downloader.py', 'minute_data_downloader.py')
     # print(file_exist_in_bucket('minute_stocks/TGLS/TGLS_01-11-2022.parquet'))
     # exit()
     # durations = []
