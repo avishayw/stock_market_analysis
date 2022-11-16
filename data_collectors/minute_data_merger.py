@@ -7,6 +7,7 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 import pytz
 import time
+import glob
 
 
 def now():
@@ -76,10 +77,11 @@ while True:
             else:
                 print(f'{now()} No merged file of {ticker_in_order_str}.')
 
-            print(f'{now()} Loading {ticker_in_order_str} dataframes from files...')
+            print(f'{now()} Loading {ticker_in_order_str} dataframes from local files and deleting them...')
             ticker_dataframes = []
             for file in ticker_minute_files:
                 ticker_dataframes.append(pd.read_parquet(file).reset_index())
+                os.remove(file)
 
             print(f'{now()} Merging {ticker_in_order_str} dataframes...')
             merged_df = pd.concat(ticker_dataframes)
@@ -97,10 +99,10 @@ while True:
             print(f'{now()} Finished merging and uploading {ticker_in_order_str} dataframes successfully.')
             total_new_merged_files += 1
 
-            print(f'{now()} Deleting {ticker_in_order_str} local files...')
+            print(f'{now()} Deleting {ticker_in_order_str} local files and directories...')
             try:
-                shutil.rmtree(local_ticker_split_files_dir_path)
-                shutil.rmtree(local_merged_file_path)
+                os.remove(local_merged_file_path)
+                os.rmdir(local_ticker_split_files_dir_path)
             except PermissionError as e:
                 print(e)
                 print(f"{now()} Couldn't remove local files. Access is denied.")
