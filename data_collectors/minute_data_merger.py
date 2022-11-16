@@ -5,7 +5,7 @@ import pandas as pd
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 import pytz
-from pathlib import Path
+import time
 
 
 def now():
@@ -26,6 +26,7 @@ next_date = datetime.now().astimezone(pytz.timezone('Asia/Jerusalem')) - relativ
 while True:
     today = datetime.now().astimezone(pytz.timezone('Asia/Jerusalem'))
     if (today >= next_date and today.weekday() in [0, 6]) or run_now:
+        t0 = time.perf_counter()
         next_date = today + relativedelta(weeks=1)
         run_now = None
         print(f'{now()} Starting')
@@ -108,5 +109,6 @@ while True:
                 delete_file_from_bucket(file)
             print(f'{now()} Done for {ticker_in_order_str}.')
 
-        print(f'{now()} Minute Data Merger finished successfully. Total split files loaded: {total_split_files}. Total new merged files: {total_new_merged_files}.')
+        run_duration_in_hr = round((time.perf_counter() - t0)/3600, 2)
+        print(f'{now()} Minute Data Merger finished successfully. Took {run_duration_in_hr} to complete. Total split files loaded: {total_split_files}. Total new merged files: {total_new_merged_files}.')
         print(f'{now()} Sleeping for one week. Next run: {next_date.strftime("%Y-%m-%d %H:%M:%S")}')
