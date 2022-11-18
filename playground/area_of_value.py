@@ -1,4 +1,4 @@
-# Here I'll be taking some time back from now and plot an histogram of the prices.
+# Here I'll be taking some time back from now and plot a histogram of the prices.
 # I'll make a list of all the different prices (open, high, low & close) and plot the histogram
 import yfinance as yf
 import pandas as pd
