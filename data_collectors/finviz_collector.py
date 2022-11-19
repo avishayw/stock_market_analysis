@@ -9,6 +9,7 @@ import random
 from cloud_utils.bucket_gcp_utils import download_from_bucket, upload_to_bucket, file_exist_in_bucket
 import os
 import pytz
+import time
 
 
 def str_to_float(var):
@@ -33,6 +34,7 @@ def str_to_float(var):
 
 
 def ticker_finviz_statistics(ticker):
+    time.sleep(1)  # In order to remain under API limit
     url = ("http://finviz.com/quote.ashx?t=" + ticker.lower())
     req = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
     webpage = urlopen(req).read()
