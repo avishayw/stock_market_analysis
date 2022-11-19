@@ -8,6 +8,7 @@ from dateutil.relativedelta import relativedelta
 import pytz
 import time
 import glob
+from pathlib import Path
 
 
 def now():
@@ -73,7 +74,7 @@ while True:
             print(f'{now()} Checking for {ticker_in_order_str} existing merged file in bucket...')
             if file_exist_in_bucket(f'stock_merged_minute_data/{ticker}.parquet'):
                 print(f'{now()} Found existing merged file of {ticker_in_order_str}. Downloading...')
-                ticker_minute_files.append(download_from_bucket(f'stock_merged_minute_data/{ticker}.parquet', local_ticker_split_files_dir_path))
+                ticker_minute_files.append(download_from_bucket(f'stock_merged_minute_data/{ticker}.parquet', Path(local_ticker_split_files_dir_path, f'{ticker}.parquet')))
             else:
                 print(f'{now()} No merged file of {ticker_in_order_str}.')
 
