@@ -3,6 +3,9 @@
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/venv" />
+      <excludeFolder url="file://$MODULE_DIR$/stocks_max_daily_history" />
+      <excludeFolder url="file://$MODULE_DIR$/stocks_max_monthly_history" />
+      <excludeFolder url="file://$MODULE_DIR$/stocks_max_weekly_history" />
     </content>
     <orderEntry type="jdk" jdkName="Python 3.10 (stock_market_analysis)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />

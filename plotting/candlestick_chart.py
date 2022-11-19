@@ -88,8 +88,6 @@ def multiple_windows_chart(ticker, df, chart_dict, remove_empty_dates=True):
         dt_all_py = [d.to_pydatetime() for d in dt_all]
         dt_obs_py = [d.to_pydatetime() for d in df['Datetime']]
         dt_breaks = [d for d in dt_all_py if d not in dt_obs_py]
-        print(dt_breaks)
-        print(len(dt_all), len(dt_breaks))
         fig.update_xaxes(rangebreaks=[dict(values=dt_breaks)])
 
     return fig

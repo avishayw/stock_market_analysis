@@ -1,3 +1,5 @@
+import json
+
 GOOGLE_APPLICATION_CREDENTIALS='d5d85ac4184033ed8d663bdb3eaa1e42e04129ab'
 credentials_dict = {
     "type": "service_account",
@@ -11,3 +13,9 @@ credentials_dict = {
   "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
   "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/777739768694-compute%40developer.gserviceaccount.com"
 }
+
+
+def save_credentials_to_file(filename):
+    with open(filename, 'w') as f:
+        json.dump(credentials_dict, f)
+    return filename

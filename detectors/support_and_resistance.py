@@ -5,9 +5,11 @@ import matplotlib.dates as mpl_dates
 import matplotlib.pyplot as plt
 from plotting.candlestick_chart import multiple_windows_chart
 from datetime import datetime
+import pandas as pd
+import numpy as np
 
 
-def fractal_candlestick_pattern_method(df, levels=[]):
+def fractal_candlestick_pattern_method(df, levels=None):
 
     # determine bullish fractal
     def is_support(df,i):
@@ -29,10 +31,14 @@ def fractal_candlestick_pattern_method(df, levels=[]):
     def is_far_from_level(value, levels, df):
         # ave = np.mean(df['High'] - df['Low'])
         # ave = np.mean(df['High'] - df['Low'])/2
-        ave = np.mean(df['High'] - df['Low']) * 2
-        return np.sum([abs(value - level) < ave for _, level in levels]) == 0
+        # ave = np.mean(df['High'] - df['Low']) * 2
+        # return np.sum([abs(value - level) < ave for _, level in levels]) == 0
+        ave = np.mean((df['High'] / df['Low'] - 1) * 100.0)
+        return np.sum([(max([value, level]) / min([value, level]) - 1) * 100.0 < ave for _, level in levels]) == 0
 
     # a list to store resistance and support levels
+    if levels is None:
+        levels = []
     start_idx = df.index[0]
     for i in range(2, df.shape[0] - 2):
         if is_support(df, i):
@@ -49,12 +55,17 @@ def fractal_candlestick_pattern_method(df, levels=[]):
     return levels
 
 
-def window_shifting_method(df, levels=[]):
+def window_shifting_method(df, levels=None):
     def is_far_from_level(value, levels, df):
         # ave = np.mean(df['High'] - df['Low'])
         # ave = np.mean(df['High'] - df['Low']) / 2
-        ave = np.mean(df['High'] - df['Low']) * 2
-        return np.sum([abs(value - level) < ave for _, level in levels]) == 0
+        # ave = np.mean(df['High'] - df['Low']) * 2
+        # return np.sum([abs(value - level) < ave for _, level in levels]) == 0
+        ave = np.mean((df['High'] / df['Low'] - 1) * 100.0)
+        return np.sum([(max([value, level])/min([value, level]) - 1)*100.0 < ave for _, level in levels]) == 0
+
+    if levels is None:
+        levels = []
 
     max_list = []
     min_list = []
@@ -274,10 +285,9 @@ def resistance_level_v0_1(ticker, df, er_threshold=0.7):
 
 if __name__ == "__main__":
     from utils.get_all_stocks import get_all_snp_stocks, get_all_nasdaq_100_stocks, get_all_dow_jones_industrial_stocks
-    from utils.download_stock_csvs import download_stock_day
+    from utils.download_stock_csvs import download_stock_day, download_stock_week, download_stock_month
     from plotting.candlestick_chart import candlestick_chart_fig, add_line_to_candlestick_chart, multiple_windows_chart
-    import pandas as pd
-    import numpy as np
+    import json
 
     def plot_support_resistance(df, levels, safety_margin=None):
         chart_dict = {(1, ''): []}
@@ -300,40 +310,60 @@ if __name__ == "__main__":
         fig = multiple_windows_chart(ticker, df, chart_dict)
         fig.show()
 
-    ticker = 'NVDA'
 
-    df = pd.read_csv(download_stock_day(ticker))
+    ticker = 'AAPL'
+    df = pd.read_csv(download_stock_day(ticker))[-1008:]
+    sma_period = 10
+    df['High_backup'] = df['High'].copy()
+    df['High'] = df['High_backup'].rolling(sma_period).mean()
+    df['Low_backup'] = df['Low'].copy()
+    df['Low'] = df['Low_backup'].rolling(sma_period).mean()
 
-    df = df[-1008:]
-    start_idx = df.index[0]
-    final_idx = df.index[-1]
-    support_resistance_levels_1 = fractal_candlestick_pattern_method(df)
-    support_resistance_levels_2 = window_shifting_method(df, levels=support_resistance_levels_1)
-    # support_resistance_levels_2 = window_shifting_method(df)
-    # support_resistance_levels_1 = fractal_candlestick_pattern_method(df, levels=support_resistance_levels_2)
+    # levels = fractal_candlestick_pattern_method(df, levels=window_shifting_method(df).copy())
+    levels = fractal_candlestick_pattern_method(df)
 
-    print(len(support_resistance_levels_1), support_resistance_levels_1)
-    print(len(support_resistance_levels_2), support_resistance_levels_2)
-    # support_resistance_levels = list(set(support_resistance_levels_1 + support_resistance_levels_2))
-    # print(len(support_resistance_levels), support_resistance_levels)
-    # plot_support_resistance(df, support_resistance_levels_1)
-    plot_support_resistance(df, support_resistance_levels_2, safety_margin=1.0)
-    # plot_support_resistance(df, support_resistance_levels)
-    # for i, level_tup in enumerate(support_resistance_levels):
-    #     idx = level_tup[0]
-    #     level = level_tup[1]
-    #     df.loc[start_idx+idx:final_idx, f'R_S_{i}'] = level
+    print(levels)
+
+    df['High_SMA'] = df['High'].copy()
+    df['Low_SMA'] = df['Low'].copy()
+    df['High'] = df['High_backup'].copy()
+    df['Low'] = df['Low_backup']
+
+    chart_dict = {(1, ''): ['High_SMA', 'Low_SMA']}
+    for level_tup in levels:
+        idx = level_tup[0]
+        level = level_tup[1]
+        df.loc[idx:df.index[-1], f'R_S_{idx}'] = level
+        chart_dict[(1, '')] = chart_dict[(1, '')] + [f'R_S_{idx}']
+
+    fig = multiple_windows_chart(ticker, df, chart_dict)
+    fig.show()
+
+
+    # Using averages for support and resistance
+
+    # daily_df = pd.read_csv(download_stock_day(ticker))[-1008:]
+    # weekly_df = pd.read_csv(download_stock_week(ticker))[-223:]
+    # monthly_df = pd.read_csv(download_stock_month(ticker))[-65:]
     #
-    # chart_dict = {(1, ''): [f'R_S_{i}' for i in range(len(support_resistance_levels))]}
-    # fig = multiple_windows_chart(ticker, df, chart_dict)
-    # fig.show()
+    # monthly_levels = fractal_candlestick_pattern_method(monthly_df, levels=window_shifting_method(monthly_df))
+    # weekly_levels = fractal_candlestick_pattern_method(weekly_df,
+    #                                                    levels=window_shifting_method(weekly_df, levels=monthly_levels.copy()).copy())
+    # daily_levels = fractal_candlestick_pattern_method(daily_df,
+    #                                                   levels=window_shifting_method(daily_df, levels=weekly_levels.copy()).copy())
+    #
+    # print(monthly_levels == weekly_levels == daily_levels)
+    #
+    # weekly_levels = [level for level in weekly_levels if level not in monthly_levels]
+    # daily_levels = [level for level in daily_levels if level not in weekly_levels and level not in monthly_levels]
+    #
+    # plot_support_resistance(daily_df, daily_levels)
+    # plot_support_resistance(weekly_df, weekly_levels)
+    # plot_support_resistance(monthly_df, monthly_levels)
 
-    # levels = np.array([tup[1] for tup in support_resistance_levels])
-    # last_price = df.iloc[-1]['Close']
-    # print(last_price)
-    # print(levels)
-    # difference_list = np.array(levels) - last_price
-    # print(difference_list)
-    # closest_resistance = levels[np.where(difference_list == np.min(difference_list[np.where(difference_list > 0)]))][0]
-    # closest_support = levels[np.where(difference_list == np.max(difference_list[np.where(difference_list < 0)]))][0]
-    # print(closest_resistance, closest_support)
+    # ticker_levels = {'monthly': monthly_levels,
+    #                  'weekly': weekly_levels,
+    #                  'daily': daily_levels}
+    #
+    # with open(f'{ticker}_support_resistance_levels.json', 'w') as f:
+    #     json.dump(ticker_levels, f, indent=4)

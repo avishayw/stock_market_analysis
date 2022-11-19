@@ -29,3 +29,5 @@ pg8000
 statsmodels
 influxdb-client
 investpy
+gspread
+gspread_dataframe
