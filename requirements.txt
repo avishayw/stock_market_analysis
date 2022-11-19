@@ -8,13 +8,11 @@ seaborn
 numpy
 mplfinance
 pandas_datareader
-tensorflow
 keras
 astropy
 pyarrow
 fastparquet
 kaleido
-stocksymbol
 google
 pathos
 google-cloud-storage
